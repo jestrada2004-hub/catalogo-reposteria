@@ -262,15 +262,253 @@
   @media (prefers-reduced-motion:reduce){
     .card,.card:hover{animation:none;transition:none;transform:none;}
   }
+
+  /* ---------- ADMIN TOGGLE ---------- */
+  .admin-toggle-btn{
+    position:absolute;
+    top:1.2rem;
+    right:1.2rem;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:1px solid rgba(246,238,221,.35);
+    background:rgba(246,238,221,.08);
+    color:var(--parchment);
+    font-size:1rem;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background .15s, border-color .15s;
+  }
+  .admin-toggle-btn:hover{background:rgba(246,238,221,.18);border-color:var(--butter);}
+  .admin-toggle-btn.logged-in{border-color:var(--butter);color:var(--butter);}
+
+  /* ---------- MODALES ---------- */
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(42,27,18,.55);
+    z-index:100;
+    align-items:center;
+    justify-content:center;
+    padding:1rem;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:var(--parchment);
+    border-radius:8px;
+    width:100%;
+    max-width:420px;
+    max-height:90vh;
+    overflow-y:auto;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  .modal-box.wide{max-width:760px;}
+  .modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:1.1rem 1.3rem;
+    background:var(--espresso);
+    color:var(--parchment);
+    border-radius:8px 8px 0 0;
+    position:sticky;
+    top:0;
+  }
+  .modal-header h2{
+    font-family:'Fraunces',serif;
+    font-size:1.2rem;
+    margin:0;
+  }
+  .modal-close{
+    background:none;
+    border:none;
+    color:var(--parchment);
+    font-size:1.3rem;
+    cursor:pointer;
+    line-height:1;
+    padding:.2rem .4rem;
+  }
+  .modal-body{padding:1.3rem;}
+
+  .form-group{margin-bottom:.9rem;}
+  .form-group label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.7rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--brick);
+    margin-bottom:.35rem;
+  }
+  .form-group input,.form-group textarea{
+    width:100%;
+    padding:.65rem .8rem;
+    border:2px solid var(--parchment-dark);
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:.9rem;
+    background:#fff;
+    outline:none;
+    transition:border-color .15s;
+  }
+  .form-group input:focus,.form-group textarea:focus{border-color:var(--butter);}
+  .form-check{display:flex;align-items:center;gap:.5rem;}
+  .form-check input{width:auto;}
+
+  .form-actions{display:flex;gap:.6rem;margin-top:1.1rem;}
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:.85rem;
+    padding:.65rem 1.1rem;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+    transition:opacity .15s, background .15s;
+  }
+  .btn-primary{background:var(--espresso);color:var(--butter);flex:1;}
+  .btn-primary:hover{opacity:.9;}
+  .btn-secondary{background:var(--parchment-dark);color:var(--espresso);}
+  .btn-secondary:hover{background:#e2d3ab;}
+  .btn-danger{background:var(--brick);color:#fff;}
+  .btn-danger:hover{opacity:.85;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .form-msg{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.78rem;
+    margin-top:.5rem;
+    min-height:1em;
+  }
+  .form-msg.error{color:var(--brick);}
+  .form-msg.success{color:#2c7a4b;}
+
+  .admin-section-title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1rem;
+    margin:1.6rem 0 .8rem;
+    padding-top:1.2rem;
+    border-top:1px dashed #cbb98d;
+  }
+  .admin-list{display:flex;flex-direction:column;gap:.6rem;}
+  .admin-row{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+    background:#fff;
+    border:1px solid var(--parchment-dark);
+    border-radius:6px;
+    padding:.6rem .7rem;
+  }
+  .admin-row img{
+    width:44px;height:44px;object-fit:cover;border-radius:4px;flex:none;background:var(--parchment-dark);
+  }
+  .admin-row-info{flex:1;min-width:0;}
+  .admin-row-info .name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .admin-row-info .meta{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#8a7960;}
+  .admin-row-actions{display:flex;gap:.35rem;flex:none;}
+  .icon-btn{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    font-size:.85rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn.edit{background:var(--butter);color:var(--espresso);}
+  .icon-btn.delete{background:var(--brick);color:#fff;}
 </style>
 </head>
 <body>
 
 <header>
+  <button id="admin-toggle" class="admin-toggle-btn" title="Administración">🔒</button>
   <div class="brand-eyebrow">Hecho a mano · Pedidos por WhatsApp</div>
   <h1 id="business-name">Tu Repostería</h1>
   <p class="tagline" id="business-tagline">Equipo y utensilios para hornear como profesional.</p>
 </header>
+
+<!-- ---------- MODAL: LOGIN ---------- -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Acceso administrador</h2>
+      <button class="modal-close" data-close="login-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Correo</label>
+          <input type="email" id="login-email" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" required autocomplete="current-password">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="login-submit">Ingresar</button>
+        </div>
+        <div class="form-msg" id="login-msg"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- MODAL: ADMINISTRACIÓN ---------- -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal-box wide">
+    <div class="modal-header">
+      <h2>Administración de productos</h2>
+      <div style="display:flex;align-items:center;gap:.7rem;">
+        <button class="btn btn-secondary" id="logout-btn" style="padding:.4rem .8rem;font-size:.75rem;">Cerrar sesión</button>
+        <button class="modal-close" data-close="admin-modal">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <form id="product-form">
+        <input type="hidden" id="product-id">
+        <div class="form-group">
+          <label for="product-name">Nombre del producto</label>
+          <input type="text" id="product-name" required>
+        </div>
+        <div class="form-group">
+          <label for="product-desc">Descripción</label>
+          <textarea id="product-desc" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="product-price">Precio (Lempiras)</label>
+          <input type="number" id="product-price" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="product-category">Categoría</label>
+          <input type="text" id="product-category" placeholder="Ej. Batidoras, Utensilios, Moldes">
+        </div>
+        <div class="form-group">
+          <label for="product-image">Link de la imagen (URL)</label>
+          <input type="url" id="product-image" placeholder="https://...">
+        </div>
+        <div class="form-group form-check">
+          <input type="checkbox" id="product-instock" checked>
+          <label for="product-instock" style="margin:0;">Disponible en inventario</label>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="product-submit">Agregar producto</button>
+          <button type="button" class="btn btn-secondary" id="product-cancel-edit" style="display:none;">Cancelar edición</button>
+        </div>
+        <div class="form-msg" id="product-msg"></div>
+      </form>
+
+      <div class="admin-section-title">Tus productos</div>
+      <div class="admin-list" id="admin-list">
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:#8a7960;">Cargando...</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="controls-wrap">
   <div class="search-row">
@@ -309,6 +547,9 @@ const searchEl = document.getElementById('search');
 let allProducts = [];
 let activeCategory = 'Todos';
 
+const supabaseConfigured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_ANON_KEY.includes('TU_ANON_KEY');
+const sb = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
 // Datos de muestra (se usan solo si Supabase no está configurado todavía)
 const DEMO_PRODUCTS = [
   {id:1, name:'Batidora KitchenAid 8Qt', description:'Batidora comercial profesional, gran capacidad.', price:12500, category:'Batidoras', image_url:'https://images.unsplash.com/photo-1585237017125-24baf8d7406f?w=600', in_stock:true},
@@ -317,8 +558,6 @@ const DEMO_PRODUCTS = [
 ];
 
 async function loadProducts(){
-  const supabaseConfigured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_ANON_KEY.includes('TU_ANON_KEY');
-
   if(!supabaseConfigured){
     statusEl.innerHTML = '⚠️ Mostrando productos de ejemplo. Conecta tu Supabase editando SUPABASE_URL y SUPABASE_ANON_KEY en el código.';
     allProducts = DEMO_PRODUCTS;
@@ -328,8 +567,7 @@ async function loadProducts(){
   }
 
   try{
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { data, error } = await client
+    const { data, error } = await sb
       .from('products')
       .select('*')
       .order('created_at', {ascending:false});
@@ -413,6 +651,202 @@ function renderGrid(){
 searchEl.addEventListener('input', renderGrid);
 
 loadProducts();
+
+/* =========================================================
+   AUTENTICACIÓN Y PANEL DE ADMINISTRACIÓN
+   ========================================================= */
+const adminToggle = document.getElementById('admin-toggle');
+const loginModal = document.getElementById('login-modal');
+const adminModal = document.getElementById('admin-modal');
+const loginForm = document.getElementById('login-form');
+const loginMsg = document.getElementById('login-msg');
+const logoutBtn = document.getElementById('logout-btn');
+const productForm = document.getElementById('product-form');
+const productMsg = document.getElementById('product-msg');
+const productSubmitBtn = document.getElementById('product-submit');
+const cancelEditBtn = document.getElementById('product-cancel-edit');
+const adminListEl = document.getElementById('admin-list');
+
+let currentSession = null;
+
+function openModal(el){ el.classList.add('open'); }
+function closeModal(el){ el.classList.remove('open'); }
+
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(document.getElementById(btn.dataset.close)));
+});
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if(e.target === overlay) closeModal(overlay); });
+});
+
+adminToggle.addEventListener('click', () => {
+  if(!supabaseConfigured){
+    alert('Primero conecta tu proyecto de Supabase (SUPABASE_URL y SUPABASE_ANON_KEY) en el código.');
+    return;
+  }
+  if(currentSession){
+    openAdminPanel();
+  }else{
+    loginMsg.textContent = '';
+    openModal(loginModal);
+  }
+});
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  loginMsg.textContent = 'Ingresando...';
+  loginMsg.className = 'form-msg';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if(error){
+    loginMsg.textContent = 'Correo o contraseña incorrectos.';
+    loginMsg.className = 'form-msg error';
+    return;
+  }
+
+  currentSession = data.session;
+  loginForm.reset();
+  closeModal(loginModal);
+  openAdminPanel();
+});
+
+logoutBtn.addEventListener('click', async () => {
+  await sb.auth.signOut();
+  currentSession = null;
+  adminToggle.classList.remove('logged-in');
+  closeModal(adminModal);
+});
+
+async function checkExistingSession(){
+  if(!supabaseConfigured) return;
+  const { data } = await sb.auth.getSession();
+  if(data.session){
+    currentSession = data.session;
+    adminToggle.classList.add('logged-in');
+  }
+}
+checkExistingSession();
+
+function openAdminPanel(){
+  adminToggle.classList.add('logged-in');
+  resetProductForm();
+  renderAdminList();
+  openModal(adminModal);
+}
+
+function resetProductForm(){
+  productForm.reset();
+  document.getElementById('product-id').value = '';
+  document.getElementById('product-instock').checked = true;
+  productSubmitBtn.textContent = 'Agregar producto';
+  cancelEditBtn.style.display = 'none';
+  productMsg.textContent = '';
+  productMsg.className = 'form-msg';
+}
+
+cancelEditBtn.addEventListener('click', resetProductForm);
+
+productForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('product-id').value;
+  const payload = {
+    name: document.getElementById('product-name').value.trim(),
+    description: document.getElementById('product-desc').value.trim(),
+    price: parseFloat(document.getElementById('product-price').value) || 0,
+    category: document.getElementById('product-category').value.trim(),
+    image_url: document.getElementById('product-image').value.trim(),
+    in_stock: document.getElementById('product-instock').checked,
+  };
+
+  productSubmitBtn.disabled = true;
+  productMsg.textContent = 'Guardando...';
+  productMsg.className = 'form-msg';
+
+  let error;
+  if(id){
+    ({ error } = await sb.from('products').update(payload).eq('id', id));
+  }else{
+    ({ error } = await sb.from('products').insert(payload));
+  }
+
+  productSubmitBtn.disabled = false;
+
+  if(error){
+    productMsg.textContent = 'Error al guardar: ' + error.message;
+    productMsg.className = 'form-msg error';
+    return;
+  }
+
+  productMsg.textContent = id ? 'Producto actualizado.' : 'Producto agregado.';
+  productMsg.className = 'form-msg success';
+  resetProductForm();
+  await loadProducts();
+  renderAdminList();
+});
+
+function fillFormForEdit(p){
+  document.getElementById('product-id').value = p.id;
+  document.getElementById('product-name').value = p.name || '';
+  document.getElementById('product-desc').value = p.description || '';
+  document.getElementById('product-price').value = p.price || 0;
+  document.getElementById('product-category').value = p.category || '';
+  document.getElementById('product-image').value = p.image_url || '';
+  document.getElementById('product-instock').checked = p.in_stock !== false;
+  productSubmitBtn.textContent = 'Guardar cambios';
+  cancelEditBtn.style.display = 'inline-block';
+  productMsg.textContent = '';
+  productForm.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function deleteProductRow(id, name){
+  if(!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+  const { error } = await sb.from('products').delete().eq('id', id);
+  if(error){
+    alert('No se pudo eliminar: ' + error.message);
+    return;
+  }
+  await loadProducts();
+  renderAdminList();
+}
+
+async function renderAdminList(){
+  adminListEl.innerHTML = '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;color:#8a7960;">Cargando...</p>';
+
+  const { data, error } = await sb.from('products').select('*').order('created_at', {ascending:false});
+
+  if(error){
+    adminListEl.innerHTML = '<p style="color:var(--brick);">No se pudieron cargar los productos.</p>';
+    return;
+  }
+
+  if(!data || data.length === 0){
+    adminListEl.innerHTML = '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;color:#8a7960;">Todavía no has agregado productos.</p>';
+    return;
+  }
+
+  adminListEl.innerHTML = '';
+  data.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'admin-row';
+    row.innerHTML = `
+      <img src="${p.image_url || 'https://placehold.co/100x100/EBDFC6/2A1B12?text=—'}" alt="">
+      <div class="admin-row-info">
+        <div class="name">${p.name}${p.in_stock === false ? ' · <span style="color:var(--brick);">Agotado</span>' : ''}</div>
+        <div class="meta">L. ${(p.price||0).toLocaleString('es-HN')} · ${p.category || 'Sin categoría'}</div>
+      </div>
+      <div class="admin-row-actions">
+        <button class="icon-btn edit" title="Editar">✎</button>
+        <button class="icon-btn delete" title="Eliminar">🗑</button>
+      </div>
+    `;
+    row.querySelector('.edit').addEventListener('click', () => fillFormForEdit(p));
+    row.querySelector('.delete').addEventListener('click', () => deleteProductRow(p.id, p.name));
+    adminListEl.appendChild(row);
+  });
+}
 </script>
 </body>
 </html>
