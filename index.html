@@ -84,7 +84,7 @@
     font-family:'Inter',sans-serif;
     font-size:.95rem;
     border:2px solid var(--espresso);
-    border-radius:999px;
+    border-radius999px;
     background:#fff;
     outline:none;
     transition:box-shadow .2s;
@@ -151,13 +151,11 @@
   .card:hover{transform:translateY(-4px);box-shadow:0 10px 20px rgba(42,27,18,.14);}
   @keyframes riseIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
-  /* perforated ticket edge */
   .card::before{
     content:"";
     display:block;
     height:10px;
-    background:
-      radial-gradient(circle at 10px 5px, var(--parchment) 5px, transparent 5.5px) repeat-x;
+    background:radial-gradient(circle at 10px 5px, var(--parchment) 5px, transparent 5.5px) repeat-x;
     background-size:20px 10px;
     background-position:-4px 0;
   }
@@ -343,7 +341,7 @@
     color:var(--brick);
     margin-bottom:.35rem;
   }
-  .form-group input,.form-group textarea{
+  .form-group input,.form-group textarea,.form-group select{
     width:100%;
     padding:.65rem .8rem;
     border:2px solid var(--parchment-dark);
@@ -354,9 +352,15 @@
     outline:none;
     transition:border-color .15s;
   }
-  .form-group input:focus,.form-group textarea:focus{border-color:var(--butter);}
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--butter);}
   .form-check{display:flex;align-items:center;gap:.5rem;}
   .form-check input{width:auto;}
+
+  /* Contenedor interactivo de categoría */
+  .category-select-container{
+    display:flex;
+    gap:.4rem;
+  }
 
   .form-actions{display:flex;gap:.6rem;margin-top:1.1rem;}
   .btn{
@@ -483,10 +487,20 @@
           <label for="product-price">Precio (Lempiras)</label>
           <input type="number" id="product-price" step="0.01" min="0" required>
         </div>
+        
+        <!-- NUEVO CONTROLES DINÁMICOS PARA CATEGORÍAS -->
         <div class="form-group">
           <label for="product-category">Categoría</label>
-          <input type="text" id="product-category" placeholder="Ej. Batidoras, Utensilios, Moldes">
+          <div class="category-select-container">
+            <select id="product-category" required>
+              <option value="">-- Seleccione una categoría --</option>
+            </select>
+            <button type="button" class="btn btn-secondary" id="btn-add-cat" title="Crear nueva categoría" style="padding:0 0.8rem; border-radius:6px;">➕</button>
+            <button type="button" class="btn btn-secondary" id="btn-edit-cat" title="Modificar seleccionada" style="padding:0 0.8rem; border-radius:6px;">✏️</button>
+            <button type="button" class="btn btn-danger" id="btn-del-cat" title="Eliminar seleccionada" style="padding:0 0.8rem; border-radius:6px;">🗑️</button>
+          </div>
         </div>
+        
         <div class="form-group">
           <label for="product-image">Link de la imagen (URL)</label>
           <input type="url" id="product-image" placeholder="https://...">
@@ -530,7 +544,7 @@
    ========================================================= */
 const SUPABASE_URL = 'https://cceyeoextdoqhqacnban.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_mAlRUydh4f-tJIF--U-Hrg_YAo-8kD1';
-const WHATSAPP_NUMBER = '50433136136'; // código de país + número, sin + ni espacios
+const WHATSAPP_NUMBER = '50433136136'; 
 const BUSINESS_NAME = 'Utensilios de Reposteria';
 const BUSINESS_TAGLINE = 'Equipo y utensilios para hornear como profesional.';
 /* ========================================================= */
@@ -543,26 +557,48 @@ const statusEl = document.getElementById('status');
 const gridEl = document.getElementById('grid');
 const tabsEl = document.getElementById('tabs');
 const searchEl = document.getElementById('search');
+const productCategorySelect = document.getElementById('product-category');
 
 let allProducts = [];
+let dbCategories = []; // Guardará las categorías dinámicas traídas de Supabase
 let activeCategory = 'Todos';
 
 const supabaseConfigured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_ANON_KEY.includes('TU_ANON_KEY');
 const sb = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-// Datos de muestra (se usan solo si Supabase no está configurado todavía)
-const DEMO_PRODUCTS = [
-  {id:1, name:'Batidora KitchenAid 8Qt', description:'Batidora comercial profesional, gran capacidad.', price:12500, category:'Batidoras', image_url:'https://images.unsplash.com/photo-1585237017125-24baf8d7406f?w=600', in_stock:true},
-  {id:2, name:'Set de espátulas de silicona', description:'Set de 3 espátulas resistentes al calor.', price:280, category:'Utensilios', image_url:'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=600', in_stock:true},
-  {id:3, name:'Molde para pastel redondo', description:'Molde antiadherente 9 pulgadas.', price:350, category:'Moldes', image_url:'https://images.unsplash.com/photo-1608649415173-fb5ad0129a5e?w=600', in_stock:false},
-];
+// Cargar tanto categorías como productos al iniciar
+async function initializeApp(){
+  if(supabaseConfigured){
+    await loadCategories();
+  }
+  await loadProducts();
+}
+
+async function loadCategories(){
+  try {
+    const { data, error } = await sb.from('categories').select('*').order('name', {ascending:true});
+    if(!error && data){
+      dbCategories = data;
+      populateCategorySelect();
+    }
+  } catch (err) {
+    console.error("Error cargando categorías:", err);
+  }
+}
+
+function populateCategorySelect(){
+  productCategorySelect.innerHTML = '<option value="">-- Seleccione una categoría --</option>';
+  dbCategories.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat.name; // Usamos el nombre directo como identificador
+    opt.textContent = cat.name;
+    productCategorySelect.appendChild(opt);
+  });
+}
 
 async function loadProducts(){
   if(!supabaseConfigured){
-    statusEl.innerHTML = '⚠️ Mostrando productos de ejemplo. Conecta tu Supabase editando SUPABASE_URL y SUPABASE_ANON_KEY en el código.';
-    allProducts = DEMO_PRODUCTS;
-    renderTabs();
-    renderGrid();
+    statusEl.innerHTML = '⚠️ Cargando datos de demo...';
     return;
   }
 
@@ -586,12 +622,13 @@ async function loadProducts(){
     renderGrid();
   }catch(err){
     console.error(err);
-    statusEl.textContent = 'No se pudo conectar a Supabase. Revisa SUPABASE_URL / SUPABASE_ANON_KEY y que la tabla "products" exista.';
+    statusEl.textContent = 'No se pudo conectar a Supabase.';
   }
 }
 
 function renderTabs(){
-  const categories = ['Todos', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+  // Genera las pestañas basándose en las categorías que existen actualmente en la base de datos
+  const categories = ['Todos', ...dbCategories.map(c => c.name)];
   tabsEl.innerHTML = '';
   categories.forEach(cat => {
     const btn = document.createElement('div');
@@ -615,7 +652,6 @@ function renderGrid(){
     return matchesCat && matchesTerm;
   });
 
-  gridEl.style.display = 'grid';
   gridEl.innerHTML = '';
 
   if(filtered.length === 0){
@@ -650,7 +686,64 @@ function renderGrid(){
 
 searchEl.addEventListener('input', renderGrid);
 
-loadProducts();
+initializeApp();
+
+/* =========================================================
+   GESTIÓN DINÁMICA DE CATEGORÍAS (Añadir, Editar, Eliminar)
+   ========================================================= */
+document.getElementById('btn-add-cat').addEventListener('click', async () => {
+  const name = prompt("Escribe el nombre de la nueva categoría:");
+  if(!name || !name.trim()) return;
+  
+  const { error } = await sb.from('categories').insert({ name: name.trim() });
+  if(error) {
+    alert("Error al guardar categoría: " + error.message);
+  } else {
+    await loadCategories();
+    renderTabs();
+  }
+});
+
+document.getElementById('btn-edit-cat').addEventListener('click', async () => {
+  const oldName = productCategorySelect.value;
+  if(!oldName) return alert("Por favor, selecciona una categoría de la lista para modificar.");
+  
+  const newName = prompt(`Modificar el nombre de "${oldName}" a:`, oldName);
+  if(!newName || !newName.trim() || newName.trim() === oldName) return;
+
+  // 1. Actualizar el nombre en la tabla de categorías
+  const { error } = await sb.from('categories').update({ name: newName.trim() }).eq('name', oldName);
+  if(error) {
+    alert("Error al modificar: " + error.message);
+    return;
+  }
+  
+  // 2. Actualizar en cascada todos los productos que usaban la vieja categoría
+  await sb.from('products').update({ category: newName.trim() }).eq('category', oldName);
+  
+  await loadCategories();
+  await loadProducts();
+});
+
+document.getElementById('btn-del-cat').addEventListener('click', async () => {
+  const name = productCategorySelect.value;
+  if(!name) return alert("Por favor, selecciona una categoría de la lista para eliminar.");
+  
+  if(!confirm(`¿Seguro que deseas eliminar la categoría "${name}"?\nLos productos asociados quedarán sin categoría.`)) return;
+
+  const { error } = await sb.from('categories').delete().eq('name', name);
+  if(error) {
+    alert("Error al eliminar: " + error.message);
+    return;
+  }
+  
+  // Limpiar la categoría en los productos afectados
+  await sb.from('products').update({ category: '' }).eq('category', name);
+  
+  await loadCategories();
+  await loadProducts();
+});
+
 
 /* =========================================================
    AUTENTICACIÓN Y PANEL DE ADMINISTRACIÓN
@@ -681,7 +774,7 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 
 adminToggle.addEventListener('click', () => {
   if(!supabaseConfigured){
-    alert('Primero conecta tu proyecto de Supabase (SUPABASE_URL y SUPABASE_ANON_KEY) en el código.');
+    alert('Primero conecta tu proyecto de Supabase.');
     return;
   }
   if(currentSession){
@@ -756,7 +849,7 @@ productForm.addEventListener('submit', async (e) => {
     name: document.getElementById('product-name').value.trim(),
     description: document.getElementById('product-desc').value.trim(),
     price: parseFloat(document.getElementById('product-price').value) || 0,
-    category: document.getElementById('product-category').value.trim(),
+    category: document.getElementById('product-category').value,
     image_url: document.getElementById('product-image').value.trim(),
     in_stock: document.getElementById('product-instock').checked,
   };
