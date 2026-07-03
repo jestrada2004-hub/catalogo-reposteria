@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Repostería</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --espresso:#2A1B12;
+    --espresso-soft:#3C2A1D;
+    --parchment:#F6EEDD;
+    --parchment-dark:#EBDFC6;
+    --butter:#E8B23D;
+    --brick:#9C4A2E;
+    --ink:#2A1B12;
+    --whatsapp:#25D366;
+    --whatsapp-dark:#1DA851;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--parchment);color:var(--ink);font-family:'Inter',sans-serif;}
+
+  /* ---------- HEADER ---------- */
+  header{
+    background:var(--espresso);
+    color:var(--parchment);
+    padding:2.2rem 1.5rem 2.6rem;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;bottom:-1px;
+    height:14px;
+    background:
+      radial-gradient(circle at 10px 0, transparent 9px, var(--espresso) 10px) repeat-x;
+    background-size:20px 20px;
+  }
+  .brand-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:.7rem;
+    color:var(--butter);
+    margin-bottom:.6rem;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:clamp(2rem,5vw,3.2rem);
+    margin:0 0 .5rem;
+  }
+  header p.tagline{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:500;
+    opacity:.85;
+    max-width:34rem;
+    margin:0 auto;
+    font-size:1.05rem;
+  }
+
+  /* ---------- CONTROLS ---------- */
+  .controls-wrap{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--parchment);
+    padding-top:1.6rem;
+    border-bottom:1px solid var(--parchment-dark);
+  }
+  .search-row{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 1.5rem 1rem;
+  }
+  #search{
+    width:100%;
+    padding:.85rem 1.1rem;
+    font-family:'Inter',sans-serif;
+    font-size:.95rem;
+    border:2px solid var(--espresso);
+    border-radius:999px;
+    background:#fff;
+    outline:none;
+    transition:box-shadow .2s;
+  }
+  #search:focus{box-shadow:0 0 0 3px rgba(232,178,61,.5);}
+
+  .tabs{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 1.5rem 1rem;
+    display:flex;
+    gap:.5rem;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex:none;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.78rem;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    padding:.5rem 1rem;
+    border-radius:6px 6px 0 0;
+    background:var(--parchment-dark);
+    color:var(--espresso);
+    cursor:pointer;
+    border:1px solid transparent;
+    border-bottom:none;
+    transition:background .15s, color .15s;
+    white-space:nowrap;
+  }
+  .tab:hover{background:#e2d3ab;}
+  .tab.active{
+    background:var(--espresso);
+    color:var(--butter);
+  }
+
+  /* ---------- GRID ---------- */
+  main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+  #status{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.85rem;
+    color:var(--brick);
+    padding:2rem 0;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:1.6rem;
+  }
+
+  .card{
+    background:#fff;
+    border-radius:4px;
+    position:relative;
+    box-shadow:0 2px 0 rgba(42,27,18,.08);
+    display:flex;
+    flex-direction:column;
+    animation:riseIn .4s ease both;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:0 10px 20px rgba(42,27,18,.14);}
+  @keyframes riseIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  /* perforated ticket edge */
+  .card::before{
+    content:"";
+    display:block;
+    height:10px;
+    background:
+      radial-gradient(circle at 10px 5px, var(--parchment) 5px, transparent 5.5px) repeat-x;
+    background-size:20px 10px;
+    background-position:-4px 0;
+  }
+  .card-img-wrap{
+    aspect-ratio:1/1;
+    background:var(--parchment-dark);
+    overflow:hidden;
+    border-bottom:1px dashed #cbb98d;
+  }
+  .card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+  .card-body{padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:.4rem;flex:1;}
+  .card-category{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.65rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--brick);
+  }
+  .card-name{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.15rem;
+    line-height:1.25;
+    margin:0;
+  }
+  .card-desc{
+    font-size:.85rem;
+    color:#5c4a3a;
+    line-height:1.4;
+    flex:1;
+  }
+  .card-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.6rem;
+    margin-top:.3rem;
+    padding-top:.6rem;
+    border-top:1px dashed #cbb98d;
+  }
+  .price-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:1.05rem;
+    color:var(--espresso);
+    background:var(--butter);
+    padding:.15rem .55rem;
+    border-radius:3px;
+    transform:rotate(-2deg);
+    display:inline-block;
+  }
+  .wa-btn{
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    background:var(--whatsapp);
+    color:#fff;
+    border:none;
+    padding:.5rem .8rem;
+    border-radius:999px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:.8rem;
+    cursor:pointer;
+    text-decoration:none;
+    transition:background .15s;
+  }
+  .wa-btn:hover{background:var(--whatsapp-dark);}
+  .wa-btn svg{width:15px;height:15px;flex:none;}
+
+  .out-of-stock{
+    position:absolute;
+    top:14px;right:-6px;
+    background:var(--brick);
+    color:#fff;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.65rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:.25rem .6rem;
+    transform:rotate(4deg);
+    box-shadow:0 2px 4px rgba(0,0,0,.2);
+  }
+
+  footer{
+    text-align:center;
+    padding:2rem 1rem 3rem;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    color:#8a7960;
+  }
+
+  .empty-msg{
+    text-align:center;
+    grid-column:1/-1;
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    color:#8a7960;
+    padding:2rem 0;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .card,.card:hover{animation:none;transition:none;transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-eyebrow">Hecho a mano · Pedidos por WhatsApp</div>
+  <h1 id="business-name">Tu Repostería</h1>
+  <p class="tagline" id="business-tagline">Equipo y utensilios para hornear como profesional.</p>
+</header>
+
+<div class="controls-wrap">
+  <div class="search-row">
+    <input id="search" type="text" placeholder="Buscar producto (ej. batidora, espátula, molde)...">
+  </div>
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<main>
+  <div id="status">Cargando catálogo...</div>
+  <div class="grid" id="grid" style="display:none;"></div>
+</main>
+
+<footer>© <span id="year"></span> · Catálogo hecho con Supabase</footer>
+
+<script>
+/* =========================================================
+   CONFIGURACIÓN — Jonathan, edita estos 4 valores
+   ========================================================= */
+const SUPABASE_URL = 'https://cceyeoextdoqhqacnban.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_mAlRUydh4f-tJIF--U-Hrg_YAo-8kD1';
+const WHATSAPP_NUMBER = '50433136136'; // código de país + número, sin + ni espacios
+const BUSINESS_NAME = 'Utensilios de Reposteria';
+const BUSINESS_TAGLINE = 'Equipo y utensilios para hornear como profesional.';
+/* ========================================================= */
+
+document.getElementById('business-name').textContent = BUSINESS_NAME;
+document.getElementById('business-tagline').textContent = BUSINESS_TAGLINE;
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const statusEl = document.getElementById('status');
+const gridEl = document.getElementById('grid');
+const tabsEl = document.getElementById('tabs');
+const searchEl = document.getElementById('search');
+
+let allProducts = [];
+let activeCategory = 'Todos';
+
+// Datos de muestra (se usan solo si Supabase no está configurado todavía)
+const DEMO_PRODUCTS = [
+  {id:1, name:'Batidora KitchenAid 8Qt', description:'Batidora comercial profesional, gran capacidad.', price:12500, category:'Batidoras', image_url:'https://images.unsplash.com/photo-1585237017125-24baf8d7406f?w=600', in_stock:true},
+  {id:2, name:'Set de espátulas de silicona', description:'Set de 3 espátulas resistentes al calor.', price:280, category:'Utensilios', image_url:'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=600', in_stock:true},
+  {id:3, name:'Molde para pastel redondo', description:'Molde antiadherente 9 pulgadas.', price:350, category:'Moldes', image_url:'https://images.unsplash.com/photo-1608649415173-fb5ad0129a5e?w=600', in_stock:false},
+];
+
+async function loadProducts(){
+  const supabaseConfigured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_ANON_KEY.includes('TU_ANON_KEY');
+
+  if(!supabaseConfigured){
+    statusEl.innerHTML = '⚠️ Mostrando productos de ejemplo. Conecta tu Supabase editando SUPABASE_URL y SUPABASE_ANON_KEY en el código.';
+    allProducts = DEMO_PRODUCTS;
+    renderTabs();
+    renderGrid();
+    return;
+  }
+
+  try{
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data, error } = await client
+      .from('products')
+      .select('*')
+      .order('created_at', {ascending:false});
+
+    if(error) throw error;
+
+    allProducts = data || [];
+    if(allProducts.length === 0){
+      statusEl.textContent = 'Todavía no hay productos cargados en Supabase.';
+      gridEl.style.display = 'grid';
+      return;
+    }
+    statusEl.style.display = 'none';
+    gridEl.style.display = 'grid';
+    renderTabs();
+    renderGrid();
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = 'No se pudo conectar a Supabase. Revisa SUPABASE_URL / SUPABASE_ANON_KEY y que la tabla "products" exista.';
+  }
+}
+
+function renderTabs(){
+  const categories = ['Todos', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+  tabsEl.innerHTML = '';
+  categories.forEach(cat => {
+    const btn = document.createElement('div');
+    btn.className = 'tab' + (cat === activeCategory ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => { activeCategory = cat; renderTabs(); renderGrid(); };
+    tabsEl.appendChild(btn);
+  });
+}
+
+function waLink(product){
+  const msg = `Hola! Me interesa el producto: ${product.name}${product.price ? ' (L. ' + product.price.toLocaleString('es-HN') + ')' : ''}. ¿Está disponible?`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+function renderGrid(){
+  const term = searchEl.value.trim().toLowerCase();
+  const filtered = allProducts.filter(p => {
+    const matchesCat = activeCategory === 'Todos' || p.category === activeCategory;
+    const matchesTerm = !term || p.name.toLowerCase().includes(term) || (p.description||'').toLowerCase().includes(term);
+    return matchesCat && matchesTerm;
+  });
+
+  gridEl.style.display = 'grid';
+  gridEl.innerHTML = '';
+
+  if(filtered.length === 0){
+    gridEl.innerHTML = '<div class="empty-msg">No encontramos productos con ese criterio.</div>';
+    return;
+  }
+
+  filtered.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      ${p.in_stock === false ? '<div class="out-of-stock">Agotado</div>' : ''}
+      <div class="card-img-wrap">
+        <img src="${p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen'}" alt="${p.name}" loading="lazy">
+      </div>
+      <div class="card-body">
+        <span class="card-category">${p.category || 'General'}</span>
+        <h3 class="card-name">${p.name}</h3>
+        <p class="card-desc">${p.description || ''}</p>
+        <div class="card-footer">
+          <span class="price-tag">L. ${(p.price||0).toLocaleString('es-HN')}</span>
+          <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.51 2 12.04 2zm0 18.05h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.19 3.7.59.25 1.04.4 1.4.51.59.19 1.12.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.16-.48-.28z"/></svg>
+            Consultar
+          </a>
+        </div>
+      </div>
+    `;
+    gridEl.appendChild(card);
+  });
+}
+
+searchEl.addEventListener('input', renderGrid);
+
+loadProducts();
+</script>
+</body>
+</html>
