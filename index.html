@@ -425,6 +425,66 @@
   }
   .icon-btn.edit{background:var(--butter);color:var(--espresso);}
   .icon-btn.delete{background:var(--brick);color:#fff;}
+
+  /* ---------- VARIANTES DE COLOR (admin) ---------- */
+  .variant-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;}
+  .variant-row{
+    display:flex;
+    gap:.5rem;
+    align-items:center;
+    background:#fff;
+    border:1px solid var(--parchment-dark);
+    border-radius:6px;
+    padding:.5rem;
+  }
+  .variant-row input[type="color"]{
+    width:36px;height:36px;
+    padding:0;
+    border:1px solid var(--parchment-dark);
+    border-radius:4px;
+    cursor:pointer;
+    background:none;
+    flex:none;
+  }
+  .variant-row input[type="text"],.variant-row input[type="url"]{
+    padding:.5rem .6rem;
+    font-size:.82rem;
+    border:2px solid var(--parchment-dark);
+    border-radius:4px;
+    font-family:'Inter',sans-serif;
+    outline:none;
+  }
+  .variant-row input[type="text"]:focus,.variant-row input[type="url"]:focus{border-color:var(--butter);}
+  .variant-row input[type="text"]{flex:1;min-width:0;}
+  .variant-row input[type="url"]{flex:1.6;min-width:0;}
+  .variant-row .icon-btn.delete{width:28px;height:28px;font-size:.75rem;flex:none;}
+  .btn-add-variant{margin-top:.4rem;}
+  .variant-empty-hint{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    color:#8a7960;
+    margin:0 0 .3rem;
+  }
+
+  /* ---------- SWATCHES DE COLOR (catálogo público) ---------- */
+  .color-swatches{
+    display:flex;
+    gap:.4rem;
+    flex-wrap:wrap;
+    margin-top:-.1rem;
+  }
+  .color-swatch{
+    width:20px;height:20px;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 0 0 1px #cbb98d;
+    cursor:pointer;
+    transition:transform .12s, box-shadow .12s;
+    flex:none;
+    padding:0;
+  }
+  .color-swatch:hover{transform:scale(1.15);}
+  .color-swatch.selected{box-shadow:0 0 0 2px var(--espresso);}
 </style>
 </head>
 <body>
@@ -504,7 +564,16 @@
         <div class="form-group">
           <label for="product-image">Link de la imagen (URL)</label>
           <input type="url" id="product-image" placeholder="https://...">
+          <p class="variant-empty-hint" style="margin-top:.3rem;">Esta es la imagen por defecto (se usa si el cliente no elige ningún color).</p>
         </div>
+
+        <div class="form-group">
+          <label>Colores disponibles (opcional)</label>
+          <p class="variant-empty-hint" id="variant-empty-hint">Este producto no tiene colores. Útil para batidoras, moldes, etc. que vienen en varios colores.</p>
+          <div class="variant-list" id="variant-list"></div>
+          <button type="button" class="btn btn-secondary btn-add-variant" id="btn-add-variant">➕ Agregar color</button>
+        </div>
+
         <div class="form-group form-check">
           <input type="checkbox" id="product-instock" checked>
           <label for="product-instock" style="margin:0;">Disponible en inventario</label>
@@ -645,8 +714,9 @@ function renderTabs(){
   });
 }
 
-function waLink(product){
-  const msg = `Hola! Me interesa el producto: ${product.name}${product.price ? ' (L. ' + product.price.toLocaleString('es-HN') + ')' : ''}. ¿Está disponible?`;
+function waLink(product, colorName){
+  const colorText = colorName ? ` en color ${colorName}` : '';
+  const msg = `Hola! Me interesa el producto: ${product.name}${colorText}${product.price ? ' (L. ' + product.price.toLocaleString('es-HN') + ')' : ''}. ¿Está disponible?`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -668,18 +738,21 @@ function renderGrid(){
   filtered.forEach(p => {
     const card = document.createElement('div');
     card.className = 'card';
+    const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
+
     card.innerHTML = `
       ${p.in_stock === false ? '<div class="out-of-stock">Agotado</div>' : ''}
       <div class="card-img-wrap">
-        <img src="${p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen'}" alt="${p.name}" loading="lazy">
+        <img id="img-${p.id}" src="${p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen'}" alt="${p.name}" loading="lazy">
       </div>
       <div class="card-body">
         <span class="card-category">${getCategoryName(p.category) || 'General'}</span>
         <h3 class="card-name">${p.name}</h3>
+        ${hasVariants ? `<div class="color-swatches" id="swatches-${p.id}"></div>` : ''}
         <p class="card-desc">${p.description || ''}</p>
         <div class="card-footer">
           <span class="price-tag">L. ${(p.price||0).toLocaleString('es-HN')}</span>
-          <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
+          <a class="wa-btn" id="wa-${p.id}" href="${waLink(p)}" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.51 2 12.04 2zm0 18.05h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.19 3.7.59.25 1.04.4 1.4.51.59.19 1.12.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.16-.48-.28z"/></svg>
             Consultar
           </a>
@@ -687,6 +760,27 @@ function renderGrid(){
       </div>
     `;
     gridEl.appendChild(card);
+
+    if(hasVariants){
+      const swatchWrap = card.querySelector(`#swatches-${p.id}`);
+      const imgEl = card.querySelector(`#img-${p.id}`);
+      const waEl = card.querySelector(`#wa-${p.id}`);
+      p.variants.forEach(v => {
+        const sw = document.createElement('button');
+        sw.type = 'button';
+        sw.className = 'color-swatch';
+        sw.style.background = v.color_hex || '#cccccc';
+        sw.title = v.color_name || '';
+        sw.setAttribute('aria-label', `Ver en color ${v.color_name || ''}`);
+        sw.addEventListener('click', () => {
+          imgEl.src = v.image_url || p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen';
+          waEl.href = waLink(p, v.color_name);
+          swatchWrap.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+          sw.classList.add('selected');
+        });
+        swatchWrap.appendChild(sw);
+      });
+    }
   });
 }
 
@@ -772,6 +866,44 @@ const cancelEditBtn = document.getElementById('product-cancel-edit');
 const adminListEl = document.getElementById('admin-list');
 
 let currentSession = null;
+let currentVariants = []; // [{color_name, color_hex, image_url}] del producto que se está creando/editando
+
+function renderVariantList(){
+  const listEl = document.getElementById('variant-list');
+  const hintEl = document.getElementById('variant-empty-hint');
+  hintEl.style.display = currentVariants.length ? 'none' : 'block';
+  listEl.innerHTML = '';
+
+  currentVariants.forEach((v, idx) => {
+    const row = document.createElement('div');
+    row.className = 'variant-row';
+    row.innerHTML = `
+      <input type="color" value="${v.color_hex || '#cccccc'}" data-idx="${idx}" data-field="color_hex" title="Color del círculo">
+      <input type="text" placeholder="Nombre (ej. Rojo)" value="${v.color_name || ''}" data-idx="${idx}" data-field="color_name">
+      <input type="url" placeholder="URL de la foto en este color" value="${v.image_url || ''}" data-idx="${idx}" data-field="image_url">
+      <button type="button" class="icon-btn delete" data-idx="${idx}" title="Quitar color">🗑</button>
+    `;
+    listEl.appendChild(row);
+  });
+
+  listEl.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx);
+      currentVariants[idx][inp.dataset.field] = inp.value;
+    });
+  });
+  listEl.querySelectorAll('.icon-btn.delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentVariants.splice(parseInt(btn.dataset.idx), 1);
+      renderVariantList();
+    });
+  });
+}
+
+document.getElementById('btn-add-variant').addEventListener('click', () => {
+  currentVariants.push({ color_name:'', color_hex:'#cccccc', image_url:'' });
+  renderVariantList();
+});
 
 function openModal(el){ el.classList.add('open'); }
 function closeModal(el){ el.classList.remove('open'); }
@@ -849,6 +981,8 @@ function resetProductForm(){
   cancelEditBtn.style.display = 'none';
   productMsg.textContent = '';
   productMsg.className = 'form-msg';
+  currentVariants = [];
+  renderVariantList();
 }
 
 cancelEditBtn.addEventListener('click', resetProductForm);
@@ -863,6 +997,9 @@ productForm.addEventListener('submit', async (e) => {
     category: parseInt(document.getElementById('product-category').value) || null,
     image_url: document.getElementById('product-image').value.trim(),
     in_stock: document.getElementById('product-instock').checked,
+    variants: currentVariants
+      .filter(v => v.color_name.trim() && v.image_url.trim())
+      .map(v => ({ color_name: v.color_name.trim(), color_hex: v.color_hex || '#cccccc', image_url: v.image_url.trim() })),
   };
 
   productSubmitBtn.disabled = true;
@@ -899,6 +1036,8 @@ function fillFormForEdit(p){
   document.getElementById('product-category').value = p.category || '';
   document.getElementById('product-image').value = p.image_url || '';
   document.getElementById('product-instock').checked = p.in_stock !== false;
+  currentVariants = Array.isArray(p.variants) ? JSON.parse(JSON.stringify(p.variants)) : [];
+  renderVariantList();
   productSubmitBtn.textContent = 'Guardar cambios';
   cancelEditBtn.style.display = 'inline-block';
   productMsg.textContent = '';
