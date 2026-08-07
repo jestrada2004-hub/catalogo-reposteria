@@ -84,7 +84,7 @@
     font-family:'Inter',sans-serif;
     font-size:.95rem;
     border:2px solid var(--espresso);
-    border-radius999px;
+    border-radius:999px;
     background:#fff;
     outline:none;
     transition:box-shadow .2s;
@@ -586,11 +586,17 @@ async function loadCategories(){
   }
 }
 
+function getCategoryName(id){
+  if(id === null || id === undefined || id === '') return '';
+  const found = dbCategories.find(c => String(c.id) === String(id));
+  return found ? found.name : '';
+}
+
 function populateCategorySelect(){
   productCategorySelect.innerHTML = '<option value="">-- Seleccione una categoría --</option>';
   dbCategories.forEach(cat => {
     const opt = document.createElement('option');
-    opt.value = cat.name; // Usamos el nombre directo como identificador
+    opt.value = cat.id; // Guardamos el ID (coincide con la relación en products.category)
     opt.textContent = cat.name;
     productCategorySelect.appendChild(opt);
   });
@@ -647,7 +653,7 @@ function waLink(product){
 function renderGrid(){
   const term = searchEl.value.trim().toLowerCase();
   const filtered = allProducts.filter(p => {
-    const matchesCat = activeCategory === 'Todos' || p.category === activeCategory;
+    const matchesCat = activeCategory === 'Todos' || getCategoryName(p.category) === activeCategory;
     const matchesTerm = !term || p.name.toLowerCase().includes(term) || (p.description||'').toLowerCase().includes(term);
     return matchesCat && matchesTerm;
   });
@@ -668,7 +674,7 @@ function renderGrid(){
         <img src="${p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen'}" alt="${p.name}" loading="lazy">
       </div>
       <div class="card-body">
-        <span class="card-category">${p.category || 'General'}</span>
+        <span class="card-category">${getCategoryName(p.category) || 'General'}</span>
         <h3 class="card-name">${p.name}</h3>
         <p class="card-desc">${p.description || ''}</p>
         <div class="card-footer">
@@ -705,41 +711,46 @@ document.getElementById('btn-add-cat').addEventListener('click', async () => {
 });
 
 document.getElementById('btn-edit-cat').addEventListener('click', async () => {
-  const oldName = productCategorySelect.value;
-  if(!oldName) return alert("Por favor, selecciona una categoría de la lista para modificar.");
-  
+  const catId = productCategorySelect.value;
+  if(!catId) return alert("Por favor, selecciona una categoría de la lista para modificar.");
+
+  const oldName = getCategoryName(catId);
   const newName = prompt(`Modificar el nombre de "${oldName}" a:`, oldName);
   if(!newName || !newName.trim() || newName.trim() === oldName) return;
 
-  // 1. Actualizar el nombre en la tabla de categorías
-  const { error } = await sb.from('categories').update({ name: newName.trim() }).eq('name', oldName);
+  // Solo se actualiza el nombre en la tabla de categorías.
+  // Los productos no necesitan tocarse: guardan el id, que no cambia.
+  const { error } = await sb.from('categories').update({ name: newName.trim() }).eq('id', catId);
   if(error) {
     alert("Error al modificar: " + error.message);
     return;
   }
-  
-  // 2. Actualizar en cascada todos los productos que usaban la vieja categoría
-  await sb.from('products').update({ category: newName.trim() }).eq('category', oldName);
-  
+
   await loadCategories();
+  productCategorySelect.value = catId;
   await loadProducts();
 });
 
 document.getElementById('btn-del-cat').addEventListener('click', async () => {
-  const name = productCategorySelect.value;
-  if(!name) return alert("Por favor, selecciona una categoría de la lista para eliminar.");
-  
+  const catId = productCategorySelect.value;
+  if(!catId) return alert("Por favor, selecciona una categoría de la lista para eliminar.");
+
+  const name = getCategoryName(catId);
   if(!confirm(`¿Seguro que deseas eliminar la categoría "${name}"?\nLos productos asociados quedarán sin categoría.`)) return;
 
-  const { error } = await sb.from('categories').delete().eq('name', name);
+  // Primero se limpia la categoría en los productos afectados (por la relación con la FK)
+  const { error: prodErr } = await sb.from('products').update({ category: null }).eq('category', catId);
+  if(prodErr){
+    alert("Error al actualizar productos: " + prodErr.message);
+    return;
+  }
+
+  const { error } = await sb.from('categories').delete().eq('id', catId);
   if(error) {
     alert("Error al eliminar: " + error.message);
     return;
   }
-  
-  // Limpiar la categoría en los productos afectados
-  await sb.from('products').update({ category: '' }).eq('category', name);
-  
+
   await loadCategories();
   await loadProducts();
 });
@@ -849,7 +860,7 @@ productForm.addEventListener('submit', async (e) => {
     name: document.getElementById('product-name').value.trim(),
     description: document.getElementById('product-desc').value.trim(),
     price: parseFloat(document.getElementById('product-price').value) || 0,
-    category: document.getElementById('product-category').value,
+    category: parseInt(document.getElementById('product-category').value) || null,
     image_url: document.getElementById('product-image').value.trim(),
     in_stock: document.getElementById('product-instock').checked,
   };
@@ -928,7 +939,7 @@ async function renderAdminList(){
       <img src="${p.image_url || 'https://placehold.co/100x100/EBDFC6/2A1B12?text=—'}" alt="">
       <div class="admin-row-info">
         <div class="name">${p.name}${p.in_stock === false ? ' · <span style="color:var(--brick);">Agotado</span>' : ''}</div>
-        <div class="meta">L. ${(p.price||0).toLocaleString('es-HN')} · ${p.category || 'Sin categoría'}</div>
+        <div class="meta">L. ${(p.price||0).toLocaleString('es-HN')} · ${getCategoryName(p.category) || 'Sin categoría'}</div>
       </div>
       <div class="admin-row-actions">
         <button class="icon-btn edit" title="Editar">✎</button>
