@@ -578,39 +578,25 @@
     margin-bottom:1rem;
   }
   #inventory-search:focus{border-color:var(--butter);}
-  .inv-row{
-    display:flex;
-    align-items:center;
-    gap:.8rem;
+
+  .inv-product{
     background:#fff;
     border:1px solid var(--parchment-dark);
-    border-radius:6px;
-    padding:.6rem .8rem;
-    margin-bottom:.6rem;
+    border-radius:8px;
+    padding:.8rem .9rem;
+    margin-bottom:.9rem;
   }
-  .inv-row img{
-    width:44px;height:44px;object-fit:cover;border-radius:4px;flex:none;background:var(--parchment-dark);
+  .inv-product-head{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
   }
-  .inv-row-info{flex:1;min-width:0;}
-  .inv-row-info .name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .inv-row-info .meta{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#8a7960;}
-  .inv-qty-wrap{display:flex;align-items:center;gap:.4rem;flex:none;}
-  .inv-qty-wrap label{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.65rem;
-    text-transform:uppercase;
-    color:var(--brick);
+  .inv-product-head img{
+    width:46px;height:46px;object-fit:cover;border-radius:4px;flex:none;background:var(--parchment-dark);
   }
-  .inv-qty-input{
-    width:64px;
-    padding:.4rem .5rem;
-    border:2px solid var(--parchment-dark);
-    border-radius:6px;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.85rem;
-    text-align:center;
-  }
-  .inv-qty-input:focus{outline:none;border-color:var(--butter);}
+  .inv-product-info{flex:1;min-width:0;}
+  .inv-product-info .name{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .inv-product-info .meta{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#8a7960;}
   .inv-badge{
     font-family:'IBM Plex Mono',monospace;
     font-size:.65rem;
@@ -623,21 +609,121 @@
   }
   .inv-badge.available{background:#dff0e4;color:#2c7a4b;}
   .inv-badge.out{background:#f5dede;color:var(--brick);}
-  .inv-save-btn{
+
+  .inv-colors{
+    margin-top:.7rem;
+    padding-top:.7rem;
+    border-top:1px dashed #cbb98d;
+    display:flex;
+    flex-direction:column;
+    gap:.5rem;
+  }
+  .inv-color-row{
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+  .inv-swatch{
+    width:20px;height:20px;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 0 0 1px var(--parchment-dark);
     flex:none;
-    width:32px;height:32px;
+  }
+  .inv-color-name{
+    flex:1;
+    min-width:0;
+    font-size:.85rem;
+    font-family:'Inter',sans-serif;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .inv-qty-input{
+    width:64px;
+    padding:.4rem .5rem;
+    border:2px solid var(--parchment-dark);
+    border-radius:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.85rem;
+    text-align:center;
+    flex:none;
+  }
+  .inv-qty-input:focus{outline:none;border-color:var(--butter);}
+  .inv-icon-btn{
+    flex:none;
+    width:28px;height:28px;
     border-radius:50%;
     border:none;
-    background:var(--espresso);
-    color:var(--butter);
     cursor:pointer;
-    font-size:.85rem;
+    font-size:.78rem;
     display:flex;align-items:center;justify-content:center;
     transition:opacity .15s;
   }
-  .inv-save-btn:hover{opacity:.85;}
-  .inv-save-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .inv-icon-btn.save{background:var(--espresso);color:var(--butter);}
+  .inv-icon-btn.delete{background:var(--brick);color:#fff;}
+  .inv-icon-btn:hover{opacity:.85;}
+  .inv-icon-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .inv-add-color{
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    margin-top:.4rem;
+    padding-top:.6rem;
+    border-top:1px dashed #cbb98d;
+    flex-wrap:wrap;
+  }
+  .inv-add-color input[type="text"]{
+    flex:1;
+    min-width:110px;
+    padding:.4rem .6rem;
+    border:2px solid var(--parchment-dark);
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:.82rem;
+  }
+  .inv-add-color input[type="text"]:focus{outline:none;border-color:var(--butter);}
+  .inv-add-color input[type="color"]{
+    width:32px;height:32px;
+    padding:0;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    flex:none;
+    background:none;
+  }
+  .inv-add-color input[type="number"]{
+    width:60px;
+    padding:.4rem .5rem;
+    border:2px solid var(--parchment-dark);
+    border-radius:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.82rem;
+    text-align:center;
+    flex:none;
+  }
+  .inv-add-color button{
+    flex:none;
+    background:var(--butter);
+    color:var(--espresso);
+    border:none;
+    border-radius:6px;
+    padding:.4rem .7rem;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:.78rem;
+    cursor:pointer;
+  }
+  .inv-add-color button:hover{opacity:.85;}
+  .inv-no-colors{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.75rem;
+    color:#8a7960;
+    font-style:italic;
+  }
 </style>
+
 </head>
 <body>
 
@@ -1272,24 +1358,54 @@ async function renderAdminList(){
 }
 
 /* =========================================================
-   INVENTARIO
+   INVENTARIO (por producto + cantidades por color)
+   Tabla: product_variants (product_id, color_name, color_hex, stock)
    ========================================================= */
 const inventoryListEl = document.getElementById('inventory-list');
 const inventorySearchEl = document.getElementById('inventory-search');
 let inventoryProducts = [];
+let variantsByProduct = {}; // { product_id: [ {id, color_name, color_hex, stock}, ... ] }
 
 async function renderInventoryList(){
   inventoryListEl.innerHTML = '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;color:#8a7960;">Cargando...</p>';
 
-  const { data, error } = await sb.from('products').select('*').order('name', {ascending:true});
+  const [{ data: products, error: prodErr }, { data: variants, error: varErr }] = await Promise.all([
+    sb.from('products').select('*').order('name', {ascending:true}),
+    sb.from('product_variants').select('*').order('color_name', {ascending:true})
+  ]);
 
-  if(error){
+  if(prodErr || varErr){
     inventoryListEl.innerHTML = '<p style="color:var(--brick);">No se pudo cargar el inventario.</p>';
     return;
   }
 
-  inventoryProducts = data || [];
+  inventoryProducts = products || [];
+  variantsByProduct = {};
+  (variants || []).forEach(v => {
+    if(!variantsByProduct[v.product_id]) variantsByProduct[v.product_id] = [];
+    variantsByProduct[v.product_id].push(v);
+  });
+
   drawInventoryList();
+}
+
+function productTotalStock(productId){
+  const rows = variantsByProduct[productId] || [];
+  return rows.reduce((sum, r) => sum + (r.stock || 0), 0);
+}
+
+async function syncProductAvailability(productId){
+  const total = productTotalStock(productId);
+  const { error } = await sb.from('products').update({ in_stock: total > 0 }).eq('id', productId);
+  if(!error){
+    const invP = inventoryProducts.find(x => x.id === productId);
+    if(invP) invP.in_stock = total > 0;
+    const cached = allProducts.find(x => x.id === productId);
+    if(cached){
+      cached.in_stock = total > 0;
+      renderGrid();
+    }
+  }
 }
 
 function drawInventoryList(){
@@ -1303,33 +1419,106 @@ function drawInventoryList(){
 
   inventoryListEl.innerHTML = '';
   filtered.forEach(p => {
-    const qty = p.stock_quantity != null ? p.stock_quantity : 0;
-    const row = document.createElement('div');
-    row.className = 'inv-row';
-    row.innerHTML = `
-      <img src="${p.image_url || 'https://placehold.co/100x100/EBDFC6/2A1B12?text=—'}" alt="">
-      <div class="inv-row-info">
-        <div class="name">${p.name}</div>
-        <div class="meta">${getCategoryName(p.category) || 'Sin categoría'}</div>
+    const total = productTotalStock(p.id);
+    const wrap = document.createElement('div');
+    wrap.className = 'inv-product';
+    wrap.innerHTML = `
+      <div class="inv-product-head">
+        <img src="${p.image_url || 'https://placehold.co/100x100/EBDFC6/2A1B12?text=—'}" alt="">
+        <div class="inv-product-info">
+          <div class="name">${p.name}</div>
+          <div class="meta">${getCategoryName(p.category) || 'Sin categoría'} · ${total} unidad${total === 1 ? '' : 'es'} en total</div>
+        </div>
+        <span class="inv-badge ${total > 0 ? 'available' : 'out'}">${total > 0 ? 'Disponible' : 'Agotado'}</span>
       </div>
-      <span class="inv-badge ${qty > 0 ? 'available' : 'out'}">${qty > 0 ? 'Disponible' : 'Agotado'}</span>
-      <div class="inv-qty-wrap">
-        <label for="inv-qty-${p.id}">Cant.</label>
-        <input type="number" min="0" step="1" class="inv-qty-input" id="inv-qty-${p.id}" value="${qty}">
+      <div class="inv-colors" data-colors-for="${p.id}"></div>
+      <div class="inv-add-color">
+        <input type="text" placeholder="Nombre del color (ej. Rojo)" class="inv-new-color-name">
+        <input type="color" class="inv-new-color-hex" value="#E8B23D" title="Color">
+        <input type="number" min="0" step="1" value="0" class="inv-new-color-qty" title="Cantidad">
+        <button type="button" class="inv-add-color-btn">➕ Agregar color</button>
       </div>
-      <button class="inv-save-btn" title="Guardar cantidad">💾</button>
     `;
-    const input = row.querySelector('.inv-qty-input');
-    const badge = row.querySelector('.inv-badge');
-    const saveBtn = row.querySelector('.inv-save-btn');
+
+    const colorsContainer = wrap.querySelector('.inv-colors');
+    drawColorRows(colorsContainer, p);
+
+    wrap.querySelector('.inv-add-color-btn').addEventListener('click', async () => {
+      const nameInput = wrap.querySelector('.inv-new-color-name');
+      const hexInput = wrap.querySelector('.inv-new-color-hex');
+      const qtyInput = wrap.querySelector('.inv-new-color-qty');
+      const colorName = nameInput.value.trim();
+      if(!colorName){
+        alert('Escribe el nombre del color.');
+        return;
+      }
+      const qty = Math.max(0, parseInt(qtyInput.value) || 0);
+
+      const { data, error } = await sb.from('product_variants')
+        .insert({ product_id: p.id, color_name: colorName, color_hex: hexInput.value, stock: qty })
+        .select();
+
+      if(error){
+        alert('No se pudo agregar el color: ' + error.message);
+        return;
+      }
+
+      if(!variantsByProduct[p.id]) variantsByProduct[p.id] = [];
+      variantsByProduct[p.id].push(data[0]);
+      variantsByProduct[p.id].sort((a,b) => a.color_name.localeCompare(b.color_name));
+
+      nameInput.value = '';
+      qtyInput.value = 0;
+
+      drawColorRows(colorsContainer, p);
+      updateProductHeadBadge(wrap, p.id);
+      await syncProductAvailability(p.id);
+    });
+
+    inventoryListEl.appendChild(wrap);
+  });
+}
+
+function updateProductHeadBadge(wrapEl, productId){
+  const total = productTotalStock(productId);
+  const badge = wrapEl.querySelector('.inv-badge');
+  const meta = wrapEl.querySelector('.inv-product-info .meta');
+  const p = inventoryProducts.find(x => x.id === productId);
+  badge.textContent = total > 0 ? 'Disponible' : 'Agotado';
+  badge.className = 'inv-badge ' + (total > 0 ? 'available' : 'out');
+  meta.textContent = `${getCategoryName(p.category) || 'Sin categoría'} · ${total} unidad${total === 1 ? '' : 'es'} en total`;
+}
+
+function drawColorRows(container, p){
+  const rows = variantsByProduct[p.id] || [];
+
+  if(rows.length === 0){
+    container.innerHTML = '<div class="inv-no-colors">Todavía no hay colores registrados para este producto.</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  rows.forEach(v => {
+    const row = document.createElement('div');
+    row.className = 'inv-color-row';
+    row.innerHTML = `
+      <span class="inv-swatch" style="background:${v.color_hex || '#cccccc'};"></span>
+      <span class="inv-color-name">${v.color_name}</span>
+      <input type="number" min="0" step="1" class="inv-qty-input" value="${v.stock || 0}">
+      <button type="button" class="inv-icon-btn save" title="Guardar cantidad">💾</button>
+      <button type="button" class="inv-icon-btn delete" title="Eliminar color">🗑</button>
+    `;
+
+    const qtyInput = row.querySelector('.inv-qty-input');
+    const saveBtn = row.querySelector('.inv-icon-btn.save');
+    const deleteBtn = row.querySelector('.inv-icon-btn.delete');
 
     saveBtn.addEventListener('click', async () => {
-      const newQty = Math.max(0, parseInt(input.value) || 0);
-      input.value = newQty;
+      const newQty = Math.max(0, parseInt(qtyInput.value) || 0);
+      qtyInput.value = newQty;
       saveBtn.disabled = true;
-      const { error } = await sb.from('products')
-        .update({ stock_quantity: newQty, in_stock: newQty > 0 })
-        .eq('id', p.id);
+
+      const { error } = await sb.from('product_variants').update({ stock: newQty }).eq('id', v.id);
       saveBtn.disabled = false;
 
       if(error){
@@ -1337,20 +1526,25 @@ function drawInventoryList(){
         return;
       }
 
-      badge.textContent = newQty > 0 ? 'Disponible' : 'Agotado';
-      badge.className = 'inv-badge ' + (newQty > 0 ? 'available' : 'out');
-
-      p.stock_quantity = newQty;
-      p.in_stock = newQty > 0;
-      const cached = allProducts.find(x => x.id === p.id);
-      if(cached){
-        cached.stock_quantity = newQty;
-        cached.in_stock = newQty > 0;
-        renderGrid();
-      }
+      v.stock = newQty;
+      updateProductHeadBadge(container.closest('.inv-product'), p.id);
+      await syncProductAvailability(p.id);
     });
 
-    inventoryListEl.appendChild(row);
+    deleteBtn.addEventListener('click', async () => {
+      if(!confirm(`¿Eliminar el color "${v.color_name}" de este producto?`)) return;
+      const { error } = await sb.from('product_variants').delete().eq('id', v.id);
+      if(error){
+        alert('No se pudo eliminar: ' + error.message);
+        return;
+      }
+      variantsByProduct[p.id] = (variantsByProduct[p.id] || []).filter(x => x.id !== v.id);
+      drawColorRows(container, p);
+      updateProductHeadBadge(container.closest('.inv-product'), p.id);
+      await syncProductAvailability(p.id);
+    });
+
+    container.appendChild(row);
   });
 }
 
