@@ -426,6 +426,88 @@
     padding:2rem 0;
   }
 
+  /* ---------- RECUADROS DE CATEGORÍA (vista "Todos") ---------- */
+  .cat-grid{
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:2rem 1.8rem;
+    align-items:start;
+  }
+  .cat-card-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:.6rem;
+    animation:riseIn .4s ease both;
+  }
+  .cat-card{
+    position:relative;
+    aspect-ratio:4/3;
+    border-radius:10px;
+    overflow:hidden;
+    cursor:pointer;
+    box-shadow:0 2px 0 rgba(42,27,18,.08);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .cat-card-img-wrap{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:2px;
+    width:100%;
+    height:100%;
+    background:var(--espresso);
+  }
+  .cat-quad{overflow:hidden;background:var(--parchment-dark);}
+  .cat-quad img{
+    width:100%;height:100%;
+    object-fit:cover;
+    display:block;
+    transition:opacity .3s ease, transform .4s ease;
+  }
+  .cat-card-name{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:.6rem;
+    padding:0 .1rem;
+  }
+  .cat-card-name span:first-child{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:1.2rem;
+    line-height:1.2;
+    color:var(--espresso);
+  }
+  .cat-card-count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.7rem;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--brick);
+    white-space:nowrap;
+    flex:none;
+  }
+  .cat-card::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    border:2px solid transparent;
+    border-radius:10px;
+    transition:border-color .2s ease;
+    pointer-events:none;
+  }
+  .cat-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 12px 24px rgba(42,27,18,.22);
+  }
+  .cat-card:hover::after{border-color:var(--butter);}
+  .cat-card:hover .cat-quad img{transform:scale(1.06);filter:brightness(.9);}
+  @media (max-width:480px){
+    .cat-grid{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .cat-card-wrap,.cat-card:hover,.cat-quad img{animation:none;transition:none;transform:none;}
+  }
+
   @media (prefers-reduced-motion:reduce){
     .card,.card:hover{animation:none;transition:none;transform:none;}
   }
@@ -1286,6 +1368,7 @@ let allProducts = [];
 let dbCategories = []; // Guardará las categorías dinámicas traídas de Supabase
 let activeCategory = 'Todos';
 let imagesByProduct = {}; // { product_id: [ {id, image_url, sort_order}, ... ] } — galería pública
+let categoryRotationTimer = null;
 
 const supabaseConfigured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_ANON_KEY.includes('TU_ANON_KEY');
 const sb = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -1433,6 +1516,13 @@ function waLink(product){
 
 function renderGrid(){
   const term = searchEl.value.trim().toLowerCase();
+
+  // Vista agrupada por categoría cuando estamos en "Todos" sin búsqueda activa
+  if(activeCategory === 'Todos' && !term){
+    renderCategoryTiles();
+    return;
+  }
+
   const filtered = allProducts.filter(p => {
     const matchesCat = activeCategory === 'Todos' || getCategoryName(p.category) === activeCategory;
     const matchesTerm = !term || p.name.toLowerCase().includes(term) || (p.description||'').toLowerCase().includes(term);
@@ -1440,6 +1530,8 @@ function renderGrid(){
   });
 
   gridEl.innerHTML = '';
+  gridEl.classList.remove('cat-grid');
+  if(categoryRotationTimer){ clearInterval(categoryRotationTimer); categoryRotationTimer = null; }
 
   if(filtered.length === 0){
     gridEl.innerHTML = '<div class="empty-msg">No encontramos productos con ese criterio.</div>';
@@ -1478,6 +1570,83 @@ function renderGrid(){
 
     gridEl.appendChild(card);
   });
+}
+
+function renderCategoryTiles(){
+  gridEl.innerHTML = '';
+  gridEl.classList.add('cat-grid');
+  if(categoryRotationTimer){ clearInterval(categoryRotationTimer); categoryRotationTimer = null; }
+
+  if(dbCategories.length === 0){
+    gridEl.innerHTML = '<div class="empty-msg">Todavía no hay categorías creadas.</div>';
+    return;
+  }
+
+  const rotatingTiles = []; // { pool:[urls], imgEls:[img,img,img,img] }
+
+  dbCategories.forEach(cat => {
+    const productsInCat = allProducts.filter(p => String(p.category) === String(cat.id));
+    let pool = [...new Set(productsInCat.map(p => p.image_url).filter(Boolean))];
+    if(pool.length === 0) pool = ['https://placehold.co/300x300/EBDFC6/2A1B12?text=' + encodeURIComponent(cat.name)];
+
+    const wrap = document.createElement('div');
+    wrap.className = 'cat-card-wrap';
+
+    const tile = document.createElement('div');
+    tile.className = 'cat-card';
+    tile.title = 'Doble clic para ver ' + cat.name;
+
+    const quadWrap = document.createElement('div');
+    quadWrap.className = 'cat-card-img-wrap';
+    const imgEls = [];
+    // Elegimos 4 imágenes al azar (sin repetir si hay suficientes) para el arranque
+    const shuffled = [...pool].sort(() => Math.random() - .5);
+    for(let i = 0; i < 4; i++){
+      const q = document.createElement('div');
+      q.className = 'cat-quad';
+      const img = document.createElement('img');
+      img.src = shuffled[i % shuffled.length];
+      img.alt = cat.name;
+      img.loading = 'lazy';
+      q.appendChild(img);
+      quadWrap.appendChild(q);
+      imgEls.push(img);
+    }
+    tile.appendChild(quadWrap);
+    wrap.appendChild(tile);
+
+    const nameBlock = document.createElement('div');
+    nameBlock.className = 'cat-card-name';
+    nameBlock.innerHTML = `<span>${cat.name}</span><span class="cat-card-count">${productsInCat.length} producto${productsInCat.length === 1 ? '' : 's'}</span>`;
+    wrap.appendChild(nameBlock);
+
+    tile.addEventListener('dblclick', () => {
+      activeCategory = cat.name;
+      renderTabs();
+      renderGrid();
+      window.scrollTo({top: tabsEl.getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth'});
+    });
+
+    gridEl.appendChild(wrap);
+    if(pool.length > 1) rotatingTiles.push({ pool, imgEls });
+  });
+
+  if(rotatingTiles.length > 0){
+    categoryRotationTimer = setInterval(() => {
+      rotatingTiles.forEach(({ pool, imgEls }) => {
+        // Rota una imagen al azar del recuadro en cada tick
+        const slot = imgEls[Math.floor(Math.random() * imgEls.length)];
+        const candidates = pool.filter(url => url !== slot.src);
+        if(candidates.length === 0) return;
+        const nextUrl = candidates[Math.floor(Math.random() * candidates.length)];
+        slot.style.opacity = '0';
+        setTimeout(() => {
+          slot.src = nextUrl;
+          slot.style.opacity = '1';
+        }, 280);
+      });
+    }, 2400);
+  }
 }
 
 /* =========================================================
