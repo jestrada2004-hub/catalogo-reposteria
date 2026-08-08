@@ -318,6 +318,43 @@
     background:var(--sale);
     color:#fff;
   }
+
+  /* ---------- SWATCHES DE COLOR EN TARJETAS PÚBLICAS ---------- */
+  .card-colors{
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    flex-wrap:wrap;
+    margin-top:.1rem;
+  }
+  .card-color-swatch{
+    position:relative;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 0 0 1px #cbb98d;
+    cursor:pointer;
+    flex:none;
+    padding:0;
+    background-clip:padding-box;
+  }
+  .card-color-swatch.selected{
+    box-shadow:0 0 0 2px var(--espresso);
+  }
+  .card-color-swatch.swatch-out{
+    opacity:.4;
+    cursor:not-allowed;
+  }
+  .card-color-swatch.swatch-out::after{
+    content:"";
+    position:absolute;
+    top:-2px;left:9px;
+    width:2px;
+    height:24px;
+    background:var(--brick);
+    transform:rotate(45deg);
+  }
   .wa-btn{
     display:flex;
     align-items:center;
@@ -639,6 +676,16 @@
     overflow:hidden;
     text-overflow:ellipsis;
   }
+  .inv-image-input{
+    flex:1.4;
+    min-width:100px;
+    padding:.35rem .5rem;
+    border:2px solid var(--parchment-dark);
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:.76rem;
+  }
+  .inv-image-input:focus{outline:none;border-color:var(--butter);}
   .inv-qty-input{
     width:64px;
     padding:.4rem .5rem;
@@ -906,6 +953,8 @@ const productCategorySelect = document.getElementById('product-category');
 let allProducts = [];
 let dbCategories = []; // Guardará las categorías dinámicas traídas de Supabase
 let activeCategory = 'Todos';
+let variantsByProduct = {}; // { product_id: [ {id, color_name, color_hex, image_url, stock}, ... ] } — cache compartido con el catálogo público
+let selectedColorByProduct = {}; // { product_id: color_name seleccionado en la tarjeta pública }
 
 const supabaseConfigured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_ANON_KEY.includes('TU_ANON_KEY');
 const sb = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -953,14 +1002,23 @@ async function loadProducts(){
   }
 
   try{
-    const { data, error } = await sb
-      .from('products')
-      .select('*')
-      .order('created_at', {ascending:false});
+    const [{ data, error }, { data: variants, error: varErr }] = await Promise.all([
+      sb.from('products').select('*').order('created_at', {ascending:false}),
+      sb.from('product_variants').select('*').order('color_name', {ascending:true})
+    ]);
 
     if(error) throw error;
 
     allProducts = data || [];
+
+    variantsByProduct = {};
+    if(!varErr && variants){
+      variants.forEach(v => {
+        if(!variantsByProduct[v.product_id]) variantsByProduct[v.product_id] = [];
+        variantsByProduct[v.product_id].push(v);
+      });
+    }
+
     if(allProducts.length === 0){
       statusEl.textContent = 'Todavía no hay productos cargados en Supabase.';
       gridEl.style.display = 'grid';
@@ -997,9 +1055,10 @@ function effectivePrice(product){
   return hasOffer(product) ? Number(product.offer_price) : Number(product.price||0);
 }
 
-function waLink(product){
+function waLink(product, colorName){
   const price = effectivePrice(product);
-  const msg = `Hola! Me interesa el producto: ${product.name}${price ? ' (L. ' + price.toLocaleString('es-HN') + ')' : ''}. ¿Está disponible?`;
+  const colorPart = colorName ? ` en color ${colorName}` : '';
+  const msg = `Hola! Me interesa el producto: ${product.name}${colorPart}${price ? ' (L. ' + price.toLocaleString('es-HN') + ')' : ''}. ¿Está disponible?`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -1027,24 +1086,59 @@ function renderGrid(){
            <span class="price-tag price-offer">L. ${Number(p.offer_price).toLocaleString('es-HN')}</span>
          </div>`
       : `<span class="price-tag">L. ${(p.price||0).toLocaleString('es-HN')}</span>`;
+
+    const variants = variantsByProduct[p.id] || [];
+    let selectedColor = selectedColorByProduct[p.id];
+    if(!variants.find(v => v.color_name === selectedColor)){
+      const firstAvailable = variants.find(v => (v.stock || 0) > 0);
+      selectedColor = firstAvailable ? firstAvailable.color_name : (variants[0] ? variants[0].color_name : null);
+      selectedColorByProduct[p.id] = selectedColor;
+    }
+    const activeVariant = variants.find(v => v.color_name === selectedColor);
+    const displayImage = (activeVariant && activeVariant.image_url) || p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen';
+
+    const colorSwatches = variants.length > 0
+      ? `<div class="card-colors">
+           ${variants.map(v => `
+             <button type="button"
+               class="card-color-swatch ${v.color_name === selectedColor ? 'selected' : ''} ${(v.stock||0) === 0 ? 'swatch-out' : ''}"
+               style="background:${v.color_hex || '#cccccc'};"
+               title="${v.color_name}${(v.stock||0) === 0 ? ' (agotado)' : ''}"
+               data-product-id="${p.id}"
+               data-color-name="${v.color_name}"
+               ${(v.stock||0) === 0 ? 'disabled' : ''}
+             ></button>
+           `).join('')}
+         </div>`
+      : '';
+
     card.innerHTML = `
       ${p.in_stock === false ? '<div class="out-of-stock">Agotado</div>' : ''}
       <div class="card-img-wrap">
-        <img src="${p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen'}" alt="${p.name}" loading="lazy">
+        <img src="${displayImage}" alt="${p.name}" loading="lazy">
       </div>
       <div class="card-body">
         <span class="card-category">${getCategoryName(p.category) || 'General'}</span>
         <h3 class="card-name">${p.name}</h3>
         <p class="card-desc">${p.description || ''}</p>
+        ${colorSwatches}
         <div class="card-footer">
           ${priceBlock}
-          <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
+          <a class="wa-btn" href="${waLink(p, selectedColor)}" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.51 2 12.04 2zm0 18.05h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.19 3.7.59.25 1.04.4 1.4.51.59.19 1.12.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.16-.48-.28z"/></svg>
             Consultar
           </a>
         </div>
       </div>
     `;
+
+    card.querySelectorAll('.card-color-swatch').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedColorByProduct[p.id] = btn.dataset.colorName;
+        renderGrid();
+      });
+    });
+
     gridEl.appendChild(card);
   });
 }
@@ -1364,7 +1458,6 @@ async function renderAdminList(){
 const inventoryListEl = document.getElementById('inventory-list');
 const inventorySearchEl = document.getElementById('inventory-search');
 let inventoryProducts = [];
-let variantsByProduct = {}; // { product_id: [ {id, color_name, color_hex, stock}, ... ] }
 
 async function renderInventoryList(){
   inventoryListEl.innerHTML = '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;color:#8a7960;">Cargando...</p>';
@@ -1435,6 +1528,7 @@ function drawInventoryList(){
       <div class="inv-add-color">
         <input type="text" placeholder="Nombre del color (ej. Rojo)" class="inv-new-color-name">
         <input type="color" class="inv-new-color-hex" value="#E8B23D" title="Color">
+        <input type="text" placeholder="URL de imagen para este color (opcional)" class="inv-new-color-image">
         <input type="number" min="0" step="1" value="0" class="inv-new-color-qty" title="Cantidad">
         <button type="button" class="inv-add-color-btn">➕ Agregar color</button>
       </div>
@@ -1446,6 +1540,7 @@ function drawInventoryList(){
     wrap.querySelector('.inv-add-color-btn').addEventListener('click', async () => {
       const nameInput = wrap.querySelector('.inv-new-color-name');
       const hexInput = wrap.querySelector('.inv-new-color-hex');
+      const imageInput = wrap.querySelector('.inv-new-color-image');
       const qtyInput = wrap.querySelector('.inv-new-color-qty');
       const colorName = nameInput.value.trim();
       if(!colorName){
@@ -1455,7 +1550,7 @@ function drawInventoryList(){
       const qty = Math.max(0, parseInt(qtyInput.value) || 0);
 
       const { data, error } = await sb.from('product_variants')
-        .insert({ product_id: p.id, color_name: colorName, color_hex: hexInput.value, stock: qty })
+        .insert({ product_id: p.id, color_name: colorName, color_hex: hexInput.value, image_url: imageInput.value.trim() || null, stock: qty })
         .select();
 
       if(error){
@@ -1468,11 +1563,13 @@ function drawInventoryList(){
       variantsByProduct[p.id].sort((a,b) => a.color_name.localeCompare(b.color_name));
 
       nameInput.value = '';
+      imageInput.value = '';
       qtyInput.value = 0;
 
       drawColorRows(colorsContainer, p);
       updateProductHeadBadge(wrap, p.id);
       await syncProductAvailability(p.id);
+      renderGrid();
     });
 
     inventoryListEl.appendChild(wrap);
@@ -1504,31 +1601,38 @@ function drawColorRows(container, p){
     row.innerHTML = `
       <span class="inv-swatch" style="background:${v.color_hex || '#cccccc'};"></span>
       <span class="inv-color-name">${v.color_name}</span>
+      <input type="text" class="inv-image-input" placeholder="URL de imagen (opcional)" value="${v.image_url || ''}">
       <input type="number" min="0" step="1" class="inv-qty-input" value="${v.stock || 0}">
-      <button type="button" class="inv-icon-btn save" title="Guardar cantidad">💾</button>
+      <button type="button" class="inv-icon-btn save" title="Guardar cambios">💾</button>
       <button type="button" class="inv-icon-btn delete" title="Eliminar color">🗑</button>
     `;
 
     const qtyInput = row.querySelector('.inv-qty-input');
+    const imageInput = row.querySelector('.inv-image-input');
     const saveBtn = row.querySelector('.inv-icon-btn.save');
     const deleteBtn = row.querySelector('.inv-icon-btn.delete');
 
     saveBtn.addEventListener('click', async () => {
       const newQty = Math.max(0, parseInt(qtyInput.value) || 0);
+      const newImage = imageInput.value.trim() || null;
       qtyInput.value = newQty;
       saveBtn.disabled = true;
 
-      const { error } = await sb.from('product_variants').update({ stock: newQty }).eq('id', v.id);
+      const { error } = await sb.from('product_variants')
+        .update({ stock: newQty, image_url: newImage })
+        .eq('id', v.id);
       saveBtn.disabled = false;
 
       if(error){
-        alert('No se pudo guardar la cantidad: ' + error.message);
+        alert('No se pudo guardar: ' + error.message);
         return;
       }
 
       v.stock = newQty;
+      v.image_url = newImage;
       updateProductHeadBadge(container.closest('.inv-product'), p.id);
       await syncProductAvailability(p.id);
+      renderGrid();
     });
 
     deleteBtn.addEventListener('click', async () => {
@@ -1542,6 +1646,7 @@ function drawColorRows(container, p){
       drawColorRows(container, p);
       updateProductHeadBadge(container.closest('.inv-product'), p.id);
       await syncProductAvailability(p.id);
+      renderGrid();
     });
 
     container.appendChild(row);
