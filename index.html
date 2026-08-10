@@ -9,13 +9,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --espresso:#2A1B12;
-    --espresso-soft:#3C2A1D;
-    --parchment:#F6EEDD;
-    --parchment-dark:#EBDFC6;
-    --butter:#E8B23D;
+    --espresso:#3D2B1F;
+    --espresso-soft:#4A3527;
+    --parchment:#FDFBF7;
+    --parchment-dark:#E8C5C8;
+    --butter:#C5A059;
     --brick:#9C4A2E;
-    --ink:#2A1B12;
+    --ink:#3D2B1F;
     --whatsapp:#25D366;
     --whatsapp-dark:#1DA851;
     --sale:#C0392B;
@@ -220,7 +220,34 @@
     outline:none;
     transition:box-shadow .2s;
   }
-  #search:focus{box-shadow:0 0 0 3px rgba(232,178,61,.5);}
+  #search:focus{box-shadow:0 0 0 3px rgba(197,160,89,.4);}
+
+  .breadcrumb-row{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 1.5rem .7rem;
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.75rem;
+    letter-spacing:.02em;
+    color:var(--espresso);
+    min-height:1.1rem;
+  }
+  .breadcrumb-link{
+    display:inline-flex;
+    align-items:center;
+    gap:.3rem;
+    cursor:pointer;
+    color:var(--brick);
+    text-decoration:none;
+    border-bottom:1px dashed transparent;
+    transition:border-color .15s, opacity .15s;
+  }
+  .breadcrumb-link:hover{border-color:var(--brick);opacity:.8;}
+  .breadcrumb-sep{color:var(--parchment-dark);opacity:.9;}
+  .breadcrumb-current{color:var(--espresso);font-weight:600;}
 
   .tabs{
     max-width:1100px;
@@ -293,38 +320,31 @@
   .grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-    gap:1.6rem;
+    gap:1.8rem 1.6rem;
   }
 
   .card{
     background:#fff;
-    border-radius:4px;
+    border-radius:18px;
+    overflow:hidden;
     position:relative;
-    box-shadow:0 2px 0 rgba(42,27,18,.08);
+    box-shadow:0 1px 3px rgba(61,43,31,.08), 0 8px 20px rgba(61,43,31,.06);
     display:flex;
     flex-direction:column;
     animation:riseIn .4s ease both;
     transition:transform .18s ease, box-shadow .18s ease;
   }
-  .card:hover{transform:translateY(-4px);box-shadow:0 10px 20px rgba(42,27,18,.14);}
+  .card:hover{transform:translateY(-4px);box-shadow:0 4px 10px rgba(61,43,31,.1), 0 16px 28px rgba(61,43,31,.14);}
   @keyframes riseIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
-  .card::before{
-    content:"";
-    display:block;
-    height:10px;
-    background:radial-gradient(circle at 10px 5px, var(--parchment) 5px, transparent 5.5px) repeat-x;
-    background-size:20px 10px;
-    background-position:-4px 0;
-  }
   .card-img-wrap{
     aspect-ratio:1/1;
     background:var(--parchment-dark);
     overflow:hidden;
-    border-bottom:1px dashed #cbb98d;
+    border-radius:18px 18px 0 0;
   }
   .card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-  .card-body{padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:.4rem;flex:1;}
+  .card-body{padding:1.1rem 1.2rem 1.3rem;display:flex;flex-direction:column;gap:.4rem;flex:1;}
   .card-category{
     font-family:'IBM Plex Mono',monospace;
     font-size:.65rem;
@@ -345,6 +365,25 @@
     line-height:1.4;
     flex:1;
   }
+  .color-swatches{
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    flex-wrap:wrap;
+    margin-top:.2rem;
+  }
+  .color-swatch{
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    border:2px solid var(--parchment);
+    box-shadow:0 0 0 1px var(--parchment-dark);
+    cursor:pointer;
+    flex:none;
+    transition:box-shadow .15s, transform .15s;
+  }
+  .color-swatch:hover{transform:scale(1.12);}
+  .color-swatch.active{box-shadow:0 0 0 2px var(--butter);}
   .card-footer{
     display:flex;
     align-items:center;
@@ -441,22 +480,22 @@
   .cat-card{
     position:relative;
     aspect-ratio:4/3;
-    border-radius:10px;
+    border-radius:18px;
     overflow:hidden;
     cursor:pointer;
-    box-shadow:0 2px 0 rgba(42,27,18,.08);
+    box-shadow:0 1px 3px rgba(61,43,31,.08), 0 8px 20px rgba(61,43,31,.06);
     transition:transform .2s ease, box-shadow .2s ease;
   }
   .cat-card-img-wrap{
     display:grid;
     grid-template-columns:1fr 1fr;
     grid-template-rows:1fr 1fr;
-    gap:2px;
+    gap:4px;
     width:100%;
     height:100%;
-    background:var(--espresso);
+    background:var(--parchment-dark);
   }
-  .cat-quad{overflow:hidden;background:var(--parchment-dark);}
+  .cat-quad{overflow:hidden;background:var(--parchment-dark);border-radius:10px;}
   .cat-quad img{
     width:100%;height:100%;
     object-fit:cover;
@@ -473,13 +512,13 @@
   .cat-card-name span:first-child{
     font-family:'Fraunces',serif;
     font-weight:700;
-    font-size:1.2rem;
+    font-size:1.4rem;
     line-height:1.2;
     color:var(--espresso);
   }
   .cat-card-count{
     font-family:'IBM Plex Mono',monospace;
-    font-size:.7rem;
+    font-size:.72rem;
     letter-spacing:.04em;
     text-transform:uppercase;
     color:var(--brick);
@@ -1271,8 +1310,9 @@
           <div id="product-variant-list"></div>
           <div class="pv-add-row">
             <input type="text" id="pv-new-name" placeholder="Nombre del color (ej. Rojo)">
-            <input type="color" id="pv-new-hex" value="#E8B23D" title="Color">
+            <input type="color" id="pv-new-hex" value="#C5A059" title="Color">
             <input type="number" id="pv-new-qty" min="0" step="1" value="0" title="Cantidad">
+            <input type="url" id="pv-new-image" placeholder="URL de la foto de este color (opcional)">
             <button type="button" id="pv-add-btn">➕ Agregar color</button>
           </div>
 
@@ -1333,6 +1373,7 @@
   <div class="search-row">
     <input id="search" type="text" placeholder="Buscar producto (ej. batidora, espátula, molde)...">
   </div>
+  <div class="breadcrumb-row" id="breadcrumb-row"></div>
   <div class="tabs" id="tabs"></div>
 </div>
 
@@ -1368,6 +1409,7 @@ let allProducts = [];
 let dbCategories = []; // Guardará las categorías dinámicas traídas de Supabase
 let activeCategory = 'Todos';
 let imagesByProduct = {}; // { product_id: [ {id, image_url, sort_order}, ... ] } — galería pública
+let publicVariantsByProduct = {}; // { product_id: [ {id, color_name, color_hex, stock, image_url}, ... ] } — colores públicos
 let categoryRotationTimer = null;
 
 const supabaseConfigured = !SUPABASE_URL.includes('TU-PROYECTO') && !SUPABASE_ANON_KEY.includes('TU_ANON_KEY');
@@ -1378,6 +1420,7 @@ async function initializeApp(){
   if(supabaseConfigured){
     await loadCategories();
     await loadProductImages();
+    await loadProductVariants();
     logVisit();
   }
   await loadProducts();
@@ -1405,6 +1448,21 @@ async function loadProductImages(){
   }
 }
 
+async function loadProductVariants(){
+  try {
+    const { data, error } = await sb.from('product_variants').select('*').order('color_name', {ascending:true});
+    if(!error && data){
+      publicVariantsByProduct = {};
+      data.forEach(v => {
+        if(!publicVariantsByProduct[v.product_id]) publicVariantsByProduct[v.product_id] = [];
+        publicVariantsByProduct[v.product_id].push(v);
+      });
+    }
+  } catch (err) {
+    console.error("Error cargando colores disponibles:", err);
+  }
+}
+
 function getGalleryFor(product){
   // Combina la imagen principal con las imágenes adicionales, sin duplicar.
   const gallery = [];
@@ -1412,7 +1470,7 @@ function getGalleryFor(product){
   (imagesByProduct[product.id] || []).forEach(img => {
     if(img.image_url && !gallery.includes(img.image_url)) gallery.push(img.image_url);
   });
-  if(gallery.length === 0) gallery.push('https://placehold.co/800x800/EBDFC6/2A1B12?text=Sin+imagen');
+  if(gallery.length === 0) gallery.push('https://placehold.co/800x800/E8C5C8/3D2B1F?text=Sin+imagen');
   return gallery;
 }
 
@@ -1466,17 +1524,55 @@ async function loadProducts(){
     }
     statusEl.style.display = 'none';
     gridEl.style.display = 'grid';
+    const initialCat = decodeURIComponent((location.hash || '').replace('#','')) || 'Todos';
+    activeCategory = initialCat;
     renderTabs();
     renderGrid();
+    renderBreadcrumb();
+    history.replaceState({ category: activeCategory }, '', activeCategory === 'Todos' ? location.pathname + location.search : '#' + encodeURIComponent(activeCategory));
   }catch(err){
     console.error(err);
     statusEl.textContent = 'No se pudo conectar a Supabase.';
   }
 }
 
+function renderBreadcrumb(){
+  const breadcrumbEl = document.getElementById('breadcrumb-row');
+  if(activeCategory === 'Todos'){
+    breadcrumbEl.innerHTML = `<span class="breadcrumb-current"><i>🏠</i> Inicio</span>`;
+    return;
+  }
+  breadcrumbEl.innerHTML = `
+    <span class="breadcrumb-link" id="breadcrumb-home">🏠 Inicio</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">${activeCategory}</span>
+  `;
+  document.getElementById('breadcrumb-home').addEventListener('click', () => goToCategory('Todos'));
+}
+
+function goToCategory(cat, opts){
+  opts = opts || {};
+  activeCategory = cat;
+  renderTabs();
+  renderGrid();
+  renderBreadcrumb();
+  if(opts.push !== false){
+    history.pushState({ category: cat }, '', '#' + encodeURIComponent(cat));
+  }
+  if(opts.scroll){
+    window.scrollTo({top: tabsEl.getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth'});
+  }
+}
+
+window.addEventListener('popstate', (e) => {
+  const cat = (e.state && e.state.category) || 'Todos';
+  goToCategory(cat, { push:false });
+});
+
 function renderTabs(){
-  // Genera las pestañas: la categoría "nuevas" primero, luego el resto, y "Todos" al final.
-  const catNames = dbCategories.map(c => c.name);
+  // Genera las pestañas: la categoría "nuevas" primero, luego el resto, y "Todos" al final. Se ocultan las categorías sin productos.
+  const nonEmptyCats = dbCategories.filter(c => allProducts.some(p => String(p.category) === String(c.id)));
+  const catNames = nonEmptyCats.map(c => c.name);
   const priorityIdx = catNames.findIndex(n => /nueva/i.test(n));
   let ordered = [...catNames];
   if(priorityIdx > -1){
@@ -1492,9 +1588,7 @@ function renderTabs(){
     btn.textContent = cat;
     btn.onclick = () => {
       if(cat === activeCategory) return;
-      activeCategory = cat;
-      renderTabs();
-      renderGrid();
+      goToCategory(cat);
     };
     tabsEl.appendChild(btn);
   });
@@ -1547,16 +1641,28 @@ function renderGrid(){
            <span class="price-tag price-offer">L. ${Number(p.offer_price).toLocaleString('es-HN')}</span>
          </div>`
       : `<span class="price-tag">L. ${(p.price||0).toLocaleString('es-HN')}</span>`;
+    const availableColors = (publicVariantsByProduct[p.id] || []).filter(v => (v.stock || 0) > 0);
+    const swatchesHtml = availableColors.length > 0
+      ? `<div class="color-swatches" data-product-id="${p.id}">
+           ${availableColors.map((v, i) => `
+             <span class="color-swatch${i === 0 ? ' active' : ''}"
+                   style="background:${v.color_hex || '#cccccc'};"
+                   data-image="${v.image_url || p.image_url || ''}"
+                   title="${v.color_name}"></span>
+           `).join('')}
+         </div>`
+      : '';
     card.innerHTML = `
       ${p.in_stock === false ? '<div class="out-of-stock">Agotado</div>' : ''}
       <div class="card-img-wrap" data-product-id="${p.id}">
-        <img src="${p.image_url || 'https://placehold.co/400x400/EBDFC6/2A1B12?text=Sin+imagen'}" alt="${p.name}" loading="lazy">
+        <img src="${p.image_url || 'https://placehold.co/400x400/E8C5C8/3D2B1F?text=Sin+imagen'}" alt="${p.name}" loading="lazy">
         <span class="zoom-hint">🔍</span>
       </div>
       <div class="card-body">
         <span class="card-category">${getCategoryName(p.category) || 'General'}</span>
         <h3 class="card-name">${p.name}</h3>
         <p class="card-desc">${p.description || ''}</p>
+        ${swatchesHtml}
         <div class="card-footer">
           ${priceBlock}
           <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
@@ -1567,6 +1673,19 @@ function renderGrid(){
       </div>
     `;
     card.querySelector('.card-img-wrap').addEventListener('dblclick', () => openLightbox(p));
+
+    const swatchEls = card.querySelectorAll('.color-swatch');
+    if(swatchEls.length > 0){
+      const cardImg = card.querySelector('.card-img-wrap img');
+      swatchEls.forEach(sw => {
+        sw.addEventListener('click', () => {
+          const img = sw.getAttribute('data-image');
+          if(img) cardImg.src = img;
+          swatchEls.forEach(s => s.classList.remove('active'));
+          sw.classList.add('active');
+        });
+      });
+    }
 
     gridEl.appendChild(card);
   });
@@ -1581,13 +1700,18 @@ function renderCategoryTiles(){
     gridEl.innerHTML = '<div class="empty-msg">Todavía no hay categorías creadas.</div>';
     return;
   }
+  if(dbCategories.every(cat => allProducts.filter(p => String(p.category) === String(cat.id)).length === 0)){
+    gridEl.innerHTML = '<div class="empty-msg">Todavía no hay productos cargados.</div>';
+    return;
+  }
 
   const rotatingTiles = []; // { pool:[urls], imgEls:[img,img,img,img] }
 
   dbCategories.forEach(cat => {
     const productsInCat = allProducts.filter(p => String(p.category) === String(cat.id));
+    if(productsInCat.length === 0) return;
     let pool = [...new Set(productsInCat.map(p => p.image_url).filter(Boolean))];
-    if(pool.length === 0) pool = ['https://placehold.co/300x300/EBDFC6/2A1B12?text=' + encodeURIComponent(cat.name)];
+    if(pool.length === 0) pool = ['https://placehold.co/300x300/E8C5C8/3D2B1F?text=' + encodeURIComponent(cat.name)];
 
     const wrap = document.createElement('div');
     wrap.className = 'cat-card-wrap';
@@ -1613,18 +1737,15 @@ function renderCategoryTiles(){
       imgEls.push(img);
     }
     tile.appendChild(quadWrap);
-    wrap.appendChild(tile);
 
     const nameBlock = document.createElement('div');
     nameBlock.className = 'cat-card-name';
     nameBlock.innerHTML = `<span>${cat.name}</span><span class="cat-card-count">${productsInCat.length} producto${productsInCat.length === 1 ? '' : 's'}</span>`;
     wrap.appendChild(nameBlock);
+    wrap.appendChild(tile);
 
     tile.addEventListener('dblclick', () => {
-      activeCategory = cat.name;
-      renderTabs();
-      renderGrid();
-      window.scrollTo({top: tabsEl.getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth'});
+      goToCategory(cat.name, { scroll:true });
     });
 
     gridEl.appendChild(wrap);
@@ -1899,15 +2020,17 @@ function renderPendingVariants(){
     const row = document.createElement('div');
     row.className = 'pv-color-row';
     row.innerHTML = `
-      <input type="color" value="${v.color_hex || '#E8B23D'}" title="Color">
+      <input type="color" value="${v.color_hex || '#C5A059'}" title="Color">
       <input type="text" value="${v.color_name}" placeholder="Nombre del color">
       <input type="number" min="0" step="1" value="${v.stock || 0}" title="Cantidad">
+      <input type="url" value="${v.image_url || ''}" placeholder="URL de la foto de este color (opcional)">
       <button type="button" title="Quitar">🗑</button>
     `;
-    const [hexInput, nameInput, qtyInput] = row.querySelectorAll('input');
+    const [hexInput, nameInput, qtyInput, imageInput] = row.querySelectorAll('input');
     hexInput.addEventListener('input', () => v.color_hex = hexInput.value);
     nameInput.addEventListener('input', () => v.color_name = nameInput.value);
     qtyInput.addEventListener('input', () => v.stock = Math.max(0, parseInt(qtyInput.value) || 0));
+    imageInput.addEventListener('input', () => v.image_url = imageInput.value.trim());
     row.querySelector('button').addEventListener('click', () => {
       if(v.id){ v._deleted = true; } else { pendingVariants = pendingVariants.filter(x => x !== v); }
       renderPendingVariants();
@@ -1920,16 +2043,19 @@ document.getElementById('pv-add-btn').addEventListener('click', () => {
   const nameInput = document.getElementById('pv-new-name');
   const hexInput = document.getElementById('pv-new-hex');
   const qtyInput = document.getElementById('pv-new-qty');
+  const imageInput = document.getElementById('pv-new-image');
   const name = nameInput.value.trim();
   if(!name){ alert('Escribe el nombre del color.'); return; }
   pendingVariants.push({
     _tempId: ++tempIdCounter,
     color_name: name,
     color_hex: hexInput.value,
-    stock: Math.max(0, parseInt(qtyInput.value) || 0)
+    stock: Math.max(0, parseInt(qtyInput.value) || 0),
+    image_url: imageInput.value.trim()
   });
   nameInput.value = '';
   qtyInput.value = 0;
+  imageInput.value = '';
   renderPendingVariants();
 });
 
@@ -1992,9 +2118,9 @@ async function saveVariantsAndImages(productId){
     if(v._deleted && v.id){
       await sb.from('product_variants').delete().eq('id', v.id);
     }else if(!v.id && !v._deleted){
-      await sb.from('product_variants').insert({ product_id: productId, color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0 });
+      await sb.from('product_variants').insert({ product_id: productId, color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0, image_url: v.image_url || null });
     }else if(v.id && !v._deleted){
-      await sb.from('product_variants').update({ color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0 }).eq('id', v.id);
+      await sb.from('product_variants').update({ color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0, image_url: v.image_url || null }).eq('id', v.id);
     }
   }
   // Imágenes adicionales
@@ -2097,7 +2223,7 @@ async function fillFormForEdit(p){
     sb.from('product_images').select('*').eq('product_id', p.id).order('sort_order', {ascending:true})
   ]);
 
-  pendingVariants = (variants || []).map(v => ({ id: v.id, color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0 }));
+  pendingVariants = (variants || []).map(v => ({ id: v.id, color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0, image_url: v.image_url || '' }));
   pendingImages = (images || []).map(i => ({ id: i.id, image_url: i.image_url }));
   renderPendingVariants();
   renderPendingImages();
@@ -2139,7 +2265,7 @@ async function renderAdminList(){
       ? `<span style="text-decoration:line-through;opacity:.6;">L. ${Number(p.price||0).toLocaleString('es-HN')}</span> → <span style="color:var(--sale);font-weight:600;">L. ${Number(p.offer_price).toLocaleString('es-HN')}</span>`
       : `L. ${(p.price||0).toLocaleString('es-HN')}`;
     row.innerHTML = `
-      <img src="${p.image_url || 'https://placehold.co/100x100/EBDFC6/2A1B12?text=—'}" alt="">
+      <img src="${p.image_url || 'https://placehold.co/100x100/E8C5C8/3D2B1F?text=—'}" alt="">
       <div class="admin-row-info">
         <div class="name">${p.name}${p.in_stock === false ? ' · <span style="color:var(--brick);">Agotado</span>' : ''}</div>
         <div class="meta">${priceMeta} · ${getCategoryName(p.category) || 'Sin categoría'}</div>
@@ -2222,7 +2348,7 @@ function drawInventoryList(){
     wrap.className = 'inv-product';
     wrap.innerHTML = `
       <div class="inv-product-head">
-        <img src="${p.image_url || 'https://placehold.co/100x100/EBDFC6/2A1B12?text=—'}" alt="">
+        <img src="${p.image_url || 'https://placehold.co/100x100/E8C5C8/3D2B1F?text=—'}" alt="">
         <div class="inv-product-info">
           <div class="name">${p.name}</div>
           <div class="meta">${getCategoryName(p.category) || 'Sin categoría'} · ${total} unidad${total === 1 ? '' : 'es'} en total</div>
@@ -2232,8 +2358,9 @@ function drawInventoryList(){
       <div class="inv-colors" data-colors-for="${p.id}"></div>
       <div class="inv-add-color">
         <input type="text" placeholder="Nombre del color (ej. Rojo)" class="inv-new-color-name">
-        <input type="color" class="inv-new-color-hex" value="#E8B23D" title="Color">
+        <input type="color" class="inv-new-color-hex" value="#C5A059" title="Color">
         <input type="number" min="0" step="1" value="0" class="inv-new-color-qty" title="Cantidad">
+        <input type="url" placeholder="URL de la foto de este color (opcional)" class="inv-new-color-image">
         <button type="button" class="inv-add-color-btn">➕ Agregar color</button>
       </div>
     `;
@@ -2245,6 +2372,7 @@ function drawInventoryList(){
       const nameInput = wrap.querySelector('.inv-new-color-name');
       const hexInput = wrap.querySelector('.inv-new-color-hex');
       const qtyInput = wrap.querySelector('.inv-new-color-qty');
+      const imageInput = wrap.querySelector('.inv-new-color-image');
       const colorName = nameInput.value.trim();
       if(!colorName){
         alert('Escribe el nombre del color.');
@@ -2253,7 +2381,7 @@ function drawInventoryList(){
       const qty = Math.max(0, parseInt(qtyInput.value) || 0);
 
       const { data, error } = await sb.from('product_variants')
-        .insert({ product_id: p.id, color_name: colorName, color_hex: hexInput.value, stock: qty })
+        .insert({ product_id: p.id, color_name: colorName, color_hex: hexInput.value, stock: qty, image_url: imageInput.value.trim() || null })
         .select();
 
       if(error){
@@ -2267,6 +2395,7 @@ function drawInventoryList(){
 
       nameInput.value = '';
       qtyInput.value = 0;
+      imageInput.value = '';
 
       drawColorRows(colorsContainer, p);
       updateProductHeadBadge(wrap, p.id);
@@ -2308,6 +2437,7 @@ function drawColorRows(container, p){
           <input type="color" class="inv-color-picker" value="${v.color_hex || '#cccccc'}" title="Color">
           <input type="text" class="inv-color-name-input" value="${v.color_name}" placeholder="Nombre del color">
           <input type="number" min="0" step="1" class="inv-qty-input" value="${v.stock || 0}">
+          <input type="url" class="inv-color-image-input" value="${v.image_url || ''}" placeholder="URL de la foto de este color">
           <button type="button" class="inv-icon-btn edit active" title="Cerrar edición">✖️</button>
           <button type="button" class="inv-icon-btn save" title="Guardar cambios">💾</button>
           <button type="button" class="inv-icon-btn delete" title="Eliminar color">🗑</button>
@@ -2329,6 +2459,7 @@ function drawColorRows(container, p){
       const deleteBtn = row.querySelector('.inv-icon-btn.delete');
       const nameInput = row.querySelector('.inv-color-name-input');
       const colorPicker = row.querySelector('.inv-color-picker');
+      const imageInput = row.querySelector('.inv-color-image-input');
 
       editBtn.addEventListener('click', () => {
         editing = !editing;
@@ -2344,6 +2475,7 @@ function drawColorRows(container, p){
           if(!newName){ alert('El nombre del color no puede quedar vacío.'); return; }
           payload.color_name = newName;
           payload.color_hex = colorPicker.value;
+          payload.image_url = imageInput.value.trim() || null;
         }
         qtyInput.value = newQty;
         saveBtn.disabled = true;
@@ -2360,6 +2492,7 @@ function drawColorRows(container, p){
         if(editing){
           v.color_name = payload.color_name;
           v.color_hex = payload.color_hex;
+          v.image_url = payload.image_url;
           editing = false;
         }
         drawColorRows(container, p);
