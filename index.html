@@ -1167,8 +1167,20 @@
     background:var(--butter);color:var(--espresso);border:none;border-radius:6px;
     padding:.5rem .9rem;font-family:'Inter',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;margin-top:.2rem;
   }
+
+/* ---------- CARRITO / CHECKOUT ---------- */
+.cart-fab{position:fixed;right:1.2rem;bottom:1.2rem;z-index:80;width:58px;height:58px;border-radius:50%;border:2px solid var(--parchment);background:var(--espresso);color:var(--butter);box-shadow:0 8px 24px rgba(0,0,0,.22);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s}
+.cart-fab:hover{transform:translateY(-3px);background:var(--espresso-soft)}
+.cart-count{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:var(--sale);color:#fff;font:600 .7rem 'IBM Plex Mono',monospace;display:flex;align-items:center;justify-content:center}
+.cart-box{max-width:680px}.cart-items{display:flex;flex-direction:column;gap:.65rem}.cart-item{display:grid;grid-template-columns:64px 1fr auto;gap:.7rem;align-items:center;padding:.65rem;background:#fff;border:1px solid var(--parchment-dark);border-radius:8px}.cart-item img{width:64px;height:64px;object-fit:cover;border-radius:6px;background:var(--parchment-dark)}.cart-item-name{font-family:'Fraunces',serif;font-weight:600}.cart-item-meta{font-size:.75rem;color:#8a7960;margin-top:.15rem}.cart-item-actions{display:flex;align-items:center;gap:.35rem;margin-top:.45rem}.qty-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--parchment-dark);background:var(--parchment);cursor:pointer;font-weight:700}.qty-num{min-width:28px;text-align:center;font-family:'IBM Plex Mono',monospace}.remove-item{border:none;background:none;color:var(--brick);cursor:pointer;font-size:.75rem;margin-left:.25rem}.cart-price{font-family:'IBM Plex Mono',monospace;font-weight:600;white-space:nowrap}.cart-summary{margin-top:1rem;padding-top:1rem;border-top:1px dashed #cbb98d}.summary-row{display:flex;justify-content:space-between;gap:1rem;margin:.35rem 0;font-family:'IBM Plex Mono',monospace;font-size:.85rem}.summary-row.total{font-size:1.05rem;font-weight:700;color:var(--espresso);padding-top:.5rem}.coupon-row{display:flex;gap:.5rem;margin-top:.8rem}.coupon-row input{flex:1;padding:.65rem .8rem;border:2px solid var(--parchment-dark);border-radius:6px}.coupon-row button{border:none;border-radius:6px;background:var(--butter);color:var(--espresso);font-weight:700;padding:.65rem .8rem;cursor:pointer}.coupon-msg{font:.72rem 'IBM Plex Mono',monospace;margin-top:.35rem}.coupon-msg.ok{color:#2c7a4b}.coupon-msg.err{color:var(--brick)}.checkout-form{margin-top:1rem}.checkout-form .form-group{margin-bottom:.75rem}.delivery-options{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin:.35rem 0 .9rem}.delivery-option{display:flex;align-items:flex-start;gap:.55rem;padding:.8rem;border:2px solid var(--parchment-dark);border-radius:8px;background:#fff;cursor:pointer}.delivery-option.selected{border-color:var(--espresso);background:#fff9e9}.delivery-option input{margin-top:.2rem;accent-color:var(--espresso)}.delivery-option strong{display:block;font-size:.85rem}.delivery-option small{display:block;color:#8a7960;margin-top:.15rem}.pickup-location{padding:.7rem .8rem;background:#f7f0df;border:1px dashed #cbb98d;border-radius:7px;font-size:.78rem;color:#6e5b4a;margin:-.25rem 0 .8rem}.shipping-note{font:.72rem 'IBM Plex Mono',monospace;color:#8a7960;margin-top:.25rem}@media(max-width:600px){.delivery-options{grid-template-columns:1fr}}.checkout-empty{text-align:center;padding:1.5rem;font-family:'Fraunces',serif;font-style:italic;color:#8a7960}
+.order-admin-card{background:#fff;border:1px solid var(--parchment-dark);border-radius:8px;padding:.85rem;margin-bottom:.75rem}.order-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.7rem}.order-admin-id{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--brick)}.order-admin-client{font-weight:700;font-size:.95rem}.order-admin-meta{font-size:.78rem;color:#6e5b4a;margin-top:.2rem}.order-status{font:600 .65rem 'IBM Plex Mono',monospace;text-transform:uppercase;padding:.25rem .55rem;border-radius:999px;background:#fff0d8;color:#8a5a00;white-space:nowrap}.order-status.facturado{background:#dff0e4;color:#2c7a4b}.order-items-list{margin:.7rem 0;padding:.65rem .8rem;border-top:1px dashed #cbb98d;border-bottom:1px dashed #cbb98d;font-size:.8rem}.order-item-line{display:flex;justify-content:space-between;gap:.6rem;margin:.2rem 0}.order-admin-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.65rem}.order-admin-actions button{border:none;border-radius:999px;padding:.5rem .8rem;cursor:pointer;font-weight:700}.order-invoice-btn{background:var(--espresso);color:var(--butter)}.order-invoice-btn:disabled{opacity:.45;cursor:not-allowed}.orders-toolbar{display:flex;gap:.5rem;margin-bottom:.9rem}.orders-toolbar input{flex:1;padding:.65rem .8rem;border:2px solid var(--parchment-dark);border-radius:6px}.orders-empty{font:.8rem 'IBM Plex Mono',monospace;color:#8a7960;padding:1rem 0}
+@media(max-width:600px){.cart-fab{right:.8rem;bottom:.8rem}.cart-item{grid-template-columns:52px 1fr}.cart-item img{width:52px;height:52px}.cart-price{grid-column:2}.order-admin-head{flex-direction:column}}
+
 </style>
 
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -1251,6 +1263,7 @@
     <div class="admin-tabs">
       <button type="button" class="admin-tab-btn active" data-admin-tab="product">Administración de producto</button>
       <button type="button" class="admin-tab-btn" data-admin-tab="inventory">Inventario</button>
+      <button type="button" class="admin-tab-btn" data-admin-tab="orders">Pedidos Web</button>
       <button type="button" class="admin-tab-btn" data-admin-tab="visits">Visitas</button>
     </div>
 
@@ -1345,6 +1358,12 @@
         </div>
       </div>
 
+
+      <div class="admin-tab-panel" id="admin-tab-orders">
+        <div class="orders-toolbar"><input id="orders-search" type="text" placeholder="Buscar por cliente, teléfono o número de pedido..."></div>
+        <div id="orders-list"><p class="orders-empty">Cargando...</p></div>
+      </div>
+
       <!-- ===== PESTAÑA: VISITAS ===== -->
       <div class="admin-tab-panel" id="admin-tab-visits">
         <div id="visits-summary" class="visits-summary"></div>
@@ -1366,6 +1385,59 @@
     </div>
     <button class="lightbox-nav next" id="lightbox-next" title="Siguiente">&#8250;</button>
     <div class="lightbox-thumbs" id="lightbox-thumbs"></div>
+  </div>
+</div>
+
+
+<button class="cart-fab" id="cart-fab" title="Ver carrito">🛒<span class="cart-count" id="cart-count">0</span></button>
+
+<div class="modal-overlay" id="cart-modal">
+  <div class="modal-box cart-box">
+    <div class="modal-header"><h2>🛒 Tu carrito</h2><button class="modal-close" data-close="cart-modal">&times;</button></div>
+    <div class="modal-body">
+      <div id="cart-items" class="cart-items"></div>
+      <div id="cart-summary" class="cart-summary" style="display:none;">
+        <div class="coupon-row"><input id="coupon-code" type="text" placeholder="Código promocional"><button id="apply-coupon">Aplicar</button></div>
+        <div id="coupon-msg" class="coupon-msg"></div>
+        <div class="summary-row"><span>Subtotal</span><strong id="cart-subtotal">L. 0.00</strong></div>
+        <div class="summary-row"><span>Descuento</span><strong id="cart-discount">- L. 0.00</strong></div>
+        <div class="summary-row"><span>Costo de envío</span><strong id="cart-shipping">L. 0.00</strong></div>
+        <div class="summary-row total"><span>Total</span><strong id="cart-total">L. 0.00</strong></div>
+        <button class="btn btn-primary" id="start-checkout" style="width:100%;margin-top:.8rem;">Continuar al checkout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="checkout-modal">
+  <div class="modal-box cart-box">
+    <div class="modal-header"><h2>Finalizar pedido</h2><button class="modal-close" data-close="checkout-modal">&times;</button></div>
+    <div class="modal-body">
+      <form id="checkout-form" class="checkout-form">
+        <div class="form-group"><label for="checkout-name">Nombre completo</label><input id="checkout-name" required></div>
+        <div class="form-group"><label for="checkout-phone">Teléfono</label><input id="checkout-phone" type="tel" required></div>
+        <div class="form-group">
+          <label>Forma de entrega</label>
+          <div class="delivery-options">
+            <label class="delivery-option" id="pickup-option">
+              <input type="checkbox" id="delivery-pickup">
+              <span><strong>🏪 Recoger en tienda</strong><small>Sin costo de envío</small></span>
+            </label>
+            <label class="delivery-option" id="delivery-option">
+              <input type="checkbox" id="delivery-home">
+              <span><strong>🚚 Enviar a domicilio</strong><small>Costo de envío: L. 150.00</small></span>
+            </label>
+          </div>
+          <div id="pickup-location" class="pickup-location" style="display:none;">📍 <strong>Ubicación para recoger:</strong> Tegucigalpa, Honduras. <a href="https://www.google.com/maps?q=14.114492,-87.173370" target="_blank" rel="noopener">Ver ubicación en Google Maps</a></div>
+          <div id="delivery-note" class="shipping-note" style="display:none;">El costo de envío de L. 150.00 se sumará al total de la orden.</div>
+        </div>
+        <div class="form-group" id="address-group"><label for="checkout-address">Dirección de entrega</label><textarea id="checkout-address" rows="2" required></textarea></div>
+        <div class="form-group"><label for="checkout-notes">Notas del pedido</label><textarea id="checkout-notes" rows="2" placeholder="Color, horario, indicaciones, etc."></textarea></div>
+        <div id="checkout-final-summary" class="cart-summary"></div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary" id="checkout-submit">Generar pedido</button><button type="button" class="btn btn-secondary" id="checkout-back">Volver</button></div>
+        <div class="form-msg" id="checkout-msg"></div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -1647,8 +1719,9 @@ function renderGrid(){
            ${availableColors.map((v, i) => `
              <span class="color-swatch${i === 0 ? ' active' : ''}"
                    style="background:${v.color_hex || '#cccccc'};"
+                   data-variant-id="${v.id}"
                    data-image="${v.image_url || p.image_url || ''}"
-                   title="${v.color_name}"></span>
+                   title="${v.color_name} — ${v.stock || 0} disponible${(v.stock || 0) === 1 ? '' : 's'}"></span>
            `).join('')}
          </div>`
       : '';
@@ -1665,7 +1738,8 @@ function renderGrid(){
         ${swatchesHtml}
         <div class="card-footer">
           ${priceBlock}
-          <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
+          <button class="wa-btn cart-add-btn" type="button">🛒 Agregar</button>
+           <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.51 2 12.04 2zm0 18.05h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.19 3.7.59.25 1.04.4 1.4.51.59.19 1.12.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.16-.48-.28z"/></svg>
             Consultar
           </a>
@@ -1674,18 +1748,24 @@ function renderGrid(){
     `;
     card.querySelector('.card-img-wrap').addEventListener('dblclick', () => openLightbox(p));
 
+    let selectedVariant = null;
     const swatchEls = card.querySelectorAll('.color-swatch');
     if(swatchEls.length > 0){
       const cardImg = card.querySelector('.card-img-wrap img');
+      const variants = publicVariantsByProduct[p.id] || [];
+      selectedVariant = variants.find(v => String(v.id) === String(swatchEls[0].dataset.variantId)) || variants[0] || null;
       swatchEls.forEach(sw => {
         sw.addEventListener('click', () => {
           const img = sw.getAttribute('data-image');
           if(img) cardImg.src = img;
+          selectedVariant = variants.find(v => String(v.id) === String(sw.dataset.variantId)) || null;
           swatchEls.forEach(s => s.classList.remove('active'));
           sw.classList.add('active');
         });
       });
     }
+    const addBtn = card.querySelector('.cart-add-btn');
+    if(addBtn) addBtn.addEventListener('click', () => addToCart(p, selectedVariant));
 
     gridEl.appendChild(card);
   });
@@ -1980,9 +2060,13 @@ function switchAdminTab(tab){
   });
   document.getElementById('admin-tab-product').classList.toggle('active', tab === 'product');
   document.getElementById('admin-tab-inventory').classList.toggle('active', tab === 'inventory');
+  document.getElementById('admin-tab-orders').classList.toggle('active', tab === 'orders');
   document.getElementById('admin-tab-visits').classList.toggle('active', tab === 'visits');
   if(tab === 'inventory'){
     renderInventoryList();
+  }
+  if(tab === 'orders'){
+    renderOrdersList();
   }
   if(tab === 'visits'){
     renderVisitsStats();
@@ -2602,6 +2686,278 @@ function drawVisitsChart(hourCounts){
   visitsChartEl.innerHTML = '';
   visitsChartEl.appendChild(wrap);
 }
+
+
+/* =========================================================
+   CARRITO, CUPONES, CHECKOUT, PEDIDOS WEB
+   ========================================================= */
+const cartFab = document.getElementById('cart-fab');
+const cartCountEl = document.getElementById('cart-count');
+const cartModal = document.getElementById('cart-modal');
+const checkoutModal = document.getElementById('checkout-modal');
+const cartItemsEl = document.getElementById('cart-items');
+const cartSummaryEl = document.getElementById('cart-summary');
+const checkoutFinalSummaryEl = document.getElementById('checkout-final-summary');
+const checkoutMsgEl = document.getElementById('checkout-msg');
+let cart = JSON.parse(localStorage.getItem('reposteria_cart') || '[]');
+let appliedCoupon = null;
+
+function money(n){ return `L. ${Number(n || 0).toLocaleString('es-HN',{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
+function saveCart(){ localStorage.setItem('reposteria_cart', JSON.stringify(cart)); updateCartUI(); }
+function getProductStock(product){
+  const variants = publicVariantsByProduct[product.id] || [];
+  if(variants.length) return variants.reduce((s,v)=>s+Math.max(0,Number(v.stock)||0),0);
+  if(product.stock != null) return Math.max(0,Number(product.stock)||0);
+  return product.in_stock === false ? 0 : 999999;
+}
+function getCartItemStock(item){
+  const p = allProducts.find(x=>String(x.id)===String(item.product_id));
+  if(!p) return 0;
+  if(item.variant_id){
+    const v=(publicVariantsByProduct[p.id]||[]).find(x=>String(x.id)===String(item.variant_id));
+    return v ? Math.max(0,Number(v.stock)||0) : 0;
+  }
+  return getProductStock(p);
+}
+function inventoryLimitMessage(item, max){
+  const p = allProducts.find(x=>String(x.id)===String(item.product_id));
+  const alternatives = p ? (publicVariantsByProduct[p.id] || [])
+    .filter(v=>String(v.id)!==String(item.variant_id) && Number(v.stock||0)>0)
+    .map(v=>`${v.color_name} (${v.stock})`) : [];
+  let msg = max > 0
+    ? `No tenemos más unidades disponibles de ${item.variant_name ? `color ${item.variant_name}` : item.name}. Solo hay ${max} disponible${max === 1 ? '' : 's'} según el inventario.`
+    : `No tenemos más unidades disponibles de ${item.variant_name ? `color ${item.variant_name}` : item.name}.`;
+  if(alternatives.length) msg += ` Puedes intentar añadir otro color u otra opción: ${alternatives.join(', ')}.`;
+  else msg += ' Puedes intentar añadir otra opción.';
+  return msg;
+}
+async function refreshCartInventory(){
+  const {data:variants, error:vErr} = await sb.from('product_variants').select('*').order('color_name',{ascending:true});
+  if(!vErr) {
+    publicVariantsByProduct = {};
+    (variants || []).forEach(v => {
+      if(!publicVariantsByProduct[v.product_id]) publicVariantsByProduct[v.product_id] = [];
+      publicVariantsByProduct[v.product_id].push(v);
+    });
+  }
+  const {data:products, error:pErr} = await sb.from('products').select('*');
+  if(!pErr && products) allProducts = products;
+  // Corrige automáticamente cantidades guardadas en el navegador que ya no existen en inventario.
+  let changed = false;
+  cart = cart.filter(item => {
+    const max = getCartItemStock(item);
+    if(max <= 0){ changed = true; return false; }
+    if(item.quantity > max){ item.quantity = max; changed = true; }
+    return true;
+  });
+  if(changed) localStorage.setItem('reposteria_cart', JSON.stringify(cart));
+}
+function cartSubtotal(){ return cart.reduce((s,i)=>s + Number(i.unit_price)*Number(i.quantity),0); }
+function discountAmount(){
+  if(!appliedCoupon) return 0;
+  const sub=cartSubtotal();
+  const d=appliedCoupon.tipo_descuento==='porcentaje' ? sub*(Number(appliedCoupon.valor)/100) : Number(appliedCoupon.valor);
+  return Math.min(sub,Math.max(0,d));
+}
+function cartShippingCost(){ return window.checkoutDeliveryMethod === 'domicilio' ? 150 : 0; }
+function cartTotal(){ return Math.max(0,cartSubtotal()-discountAmount()+cartShippingCost()); }
+function cartQty(){ return cart.reduce((s,i)=>s+Number(i.quantity),0); }
+function updateCartUI(){
+  cartCountEl.textContent=cartQty();
+  cartCountEl.style.display=cartQty()>0?'flex':'none';
+  drawCart();
+}
+async function addToCart(product, variant=null){
+  // Siempre consulta el inventario actual antes de agregar, evitando depender de datos viejos del navegador.
+  if(variant?.id){
+    const {data:liveVariant,error} = await sb.from('product_variants').select('*').eq('id',variant.id).maybeSingle();
+    if(error || !liveVariant){ alert('No se pudo consultar el inventario. Intenta nuevamente.'); return; }
+    variant = liveVariant;
+  }else{
+    const {data:liveVariants,error} = await sb.from('product_variants').select('*').eq('product_id',product.id).order('color_name',{ascending:true});
+    if(!error && liveVariants?.length){
+      publicVariantsByProduct[product.id] = liveVariants;
+      alert('Selecciona un color disponible antes de agregar el producto.');
+      return;
+    }
+    const {data:liveProduct,error:pErr} = await sb.from('products').select('*').eq('id',product.id).maybeSingle();
+    if(pErr || !liveProduct){ alert('No se pudo consultar el inventario. Intenta nuevamente.'); return; }
+    product = liveProduct;
+  }
+  const stock=variant ? Math.max(0,Number(variant.stock)||0) : Math.max(0,Number(product.stock)||0);
+  const key=`${product.id}::${variant?variant.id:''}`;
+  const existing=cart.find(i=>i.key===key);
+  const current=existing ? Number(existing.quantity) : 0;
+  if(stock<=0){
+    const temp={product_id:product.id,variant_id:variant?.id||null,variant_name:variant?.color_name||'',name:product.name};
+    alert(inventoryLimitMessage(temp,0));
+    return;
+  }
+  if(current>=stock){
+    const temp={product_id:product.id,variant_id:variant?.id||null,variant_name:variant?.color_name||'',name:product.name};
+    alert(inventoryLimitMessage(temp,stock));
+    return;
+  }
+  if(existing) existing.quantity++;
+  else cart.push({key,product_id:product.id,variant_id:variant?.id||null,variant_name:variant?.color_name||'',name:product.name,unit_price:effectivePrice(product),image_url:variant?.image_url||product.image_url||'',quantity:1});
+  saveCart(); openModal(cartModal);
+}
+function drawCart(){
+  if(!cart.length){ cartItemsEl.innerHTML='<div class="checkout-empty">Tu carrito está vacío.</div>'; cartSummaryEl.style.display='none'; return; }
+  cartItemsEl.innerHTML='';
+  cart.forEach(item=>{
+    const row=document.createElement('div'); row.className='cart-item';
+    row.innerHTML=`<img src="${item.image_url||'https://placehold.co/100x100/E8C5C8/3D2B1F?text=—'}" alt="">
+      <div><div class="cart-item-name">${item.name}</div><div class="cart-item-meta">${item.variant_name?`Color: ${item.variant_name} · `:''}${money(item.unit_price)} c/u</div>
+      <div class="cart-item-actions"><button class="qty-btn minus">−</button><span class="qty-num">${item.quantity}</span><button class="qty-btn plus">+</button><button class="remove-item">Eliminar</button></div></div>
+      <div class="cart-price">${money(item.unit_price*item.quantity)}</div>`;
+    row.querySelector('.minus').onclick=()=>changeCartQty(item.key,-1);
+    row.querySelector('.plus').onclick=()=>changeCartQty(item.key,1);
+    row.querySelector('.remove-item').onclick=()=>{cart=cart.filter(x=>x.key!==item.key);saveCart();};
+    cartItemsEl.appendChild(row);
+  });
+  cartSummaryEl.style.display='block';
+  document.getElementById('cart-subtotal').textContent=money(cartSubtotal());
+  document.getElementById('cart-discount').textContent=`- ${money(discountAmount()).replace('L. ','L. ')}`;
+  document.getElementById('cart-shipping').textContent=money(cartShippingCost());
+  document.getElementById('cart-total').textContent=money(cartTotal());
+}
+async function changeCartQty(key,delta){
+  const item=cart.find(i=>i.key===key); if(!item)return;
+  await refreshCartInventory();
+  const fresh=cart.find(i=>i.key===key); if(!fresh)return;
+  const max=getCartItemStock(fresh); const next=fresh.quantity+delta;
+  if(next<=0){cart=cart.filter(x=>x.key!==key);}
+  else if(next<=max){fresh.quantity=next;}
+  else {alert(inventoryLimitMessage(fresh,max));}
+  saveCart();
+}
+cartFab.addEventListener('click',async()=>{await refreshCartInventory();updateCartUI();openModal(cartModal);});
+
+document.getElementById('apply-coupon').addEventListener('click',async()=>{
+  const code=document.getElementById('coupon-code').value.trim().toUpperCase(); const msg=document.getElementById('coupon-msg');
+  if(!code){appliedCoupon=null;msg.textContent='Escribe un código.';msg.className='coupon-msg err';updateCartUI();return;}
+  const {data,error}=await sb.from('cupones').select('id,codigo,tipo_descuento,valor,activo').eq('codigo',code).eq('activo',true).maybeSingle();
+  if(error||!data){appliedCoupon=null;msg.textContent='Cupón inválido o inactivo.';msg.className='coupon-msg err';}
+  else {appliedCoupon=data;msg.textContent=`Cupón aplicado: ${data.tipo_descuento==='porcentaje'?data.valor+'%':money(data.valor)}`;msg.className='coupon-msg ok';}
+  updateCartUI();
+});
+
+window.checkoutDeliveryMethod = null;
+const pickupCheck=document.getElementById('delivery-pickup');
+const homeCheck=document.getElementById('delivery-home');
+const pickupOption=document.getElementById('pickup-option');
+const homeOption=document.getElementById('delivery-option');
+const pickupLocationEl=document.getElementById('pickup-location');
+const deliveryNoteEl=document.getElementById('delivery-note');
+const addressGroup=document.getElementById('address-group');
+const addressEl=document.getElementById('checkout-address');
+
+function updateDeliveryUI(){
+  if(pickupCheck.checked){
+    homeCheck.checked=false; window.checkoutDeliveryMethod='recoger';
+  }else if(homeCheck.checked){
+    pickupCheck.checked=false; window.checkoutDeliveryMethod='domicilio';
+  }else{
+    window.checkoutDeliveryMethod=null;
+  }
+  pickupOption.classList.toggle('selected',pickupCheck.checked);
+  homeOption.classList.toggle('selected',homeCheck.checked);
+  pickupLocationEl.style.display=pickupCheck.checked?'block':'none';
+  deliveryNoteEl.style.display=homeCheck.checked?'block':'none';
+  addressGroup.style.display=homeCheck.checked?'block':'none';
+  addressEl.required=homeCheck.checked;
+  if(!homeCheck.checked) addressEl.value='';
+  updateCartUI();
+  updateCheckoutSummary();
+}
+function updateCheckoutSummary(){
+  const ship=cartShippingCost();
+  checkoutFinalSummaryEl.innerHTML=`<div class="summary-row"><span>Subtotal</span><strong>${money(cartSubtotal())}</strong></div><div class="summary-row"><span>Descuento</span><strong>- ${money(discountAmount())}</strong></div><div class="summary-row"><span>Impuesto sobre venta (15%)</span><strong>L. 0.00</strong></div><div class="summary-row"><span>Costo de envío</span><strong>${money(ship)}</strong></div><div class="summary-row total"><span>Total</span><strong>${money(cartTotal())}</strong></div>`;
+}
+pickupCheck.addEventListener('change',updateDeliveryUI);
+homeCheck.addEventListener('change',updateDeliveryUI);
+
+document.getElementById('start-checkout').addEventListener('click',()=>{
+  if(!cart.length)return;
+  pickupCheck.checked=false; homeCheck.checked=false; window.checkoutDeliveryMethod=null;
+  updateDeliveryUI();
+  checkoutMsgEl.textContent=''; checkoutMsgEl.className='form-msg'; closeModal(cartModal); openModal(checkoutModal);
+});
+document.getElementById('checkout-back').addEventListener('click',()=>{closeModal(checkoutModal);openModal(cartModal);});
+
+document.getElementById('checkout-form').addEventListener('submit',async(e)=>{
+  e.preventDefault(); if(!cart.length)return;
+  const submit=document.getElementById('checkout-submit'); submit.disabled=true; checkoutMsgEl.textContent='Registrando pedido...'; checkoutMsgEl.className='form-msg';
+  try{
+    await refreshCartInventory();
+    for(const item of cart){
+      const max=getCartItemStock(item);
+      if(item.quantity>max) throw new Error(inventoryLimitMessage(item,max));
+    }
+    if(!window.checkoutDeliveryMethod) throw new Error('Selecciona una forma de entrega: recoger en tienda o enviar a domicilio.');
+    const payload={cliente_nombre:document.getElementById('checkout-name').value.trim(),cliente_telefono:document.getElementById('checkout-phone').value.trim(),direccion:window.checkoutDeliveryMethod==='domicilio'?document.getElementById('checkout-address').value.trim():'Recoger en tienda',notas:document.getElementById('checkout-notes').value.trim()||null,tipo_entrega:window.checkoutDeliveryMethod,costo_envio:cartShippingCost()};
+    const rpcItems=cart.map(i=>({product_id:i.product_id,variant_id:i.variant_id||null,quantity:i.quantity}));
+    const {data:created,error:orderErr}=await sb.rpc('crear_pedido_web',{p_cliente_nombre:payload.cliente_nombre,p_cliente_telefono:payload.cliente_telefono,p_direccion:payload.direccion,p_notas:payload.notas,p_tipo_entrega:payload.tipo_entrega,p_items:rpcItems,p_cupon_codigo:appliedCoupon?.codigo||null});
+    if(orderErr)throw orderErr;
+    const order={...created,...payload,fecha:new Date().toISOString(),estado:'Pendiente',costo_envio:payload.costo_envio};
+    const {data:details,error:detailErr}=await sb.from('detalle_pedidos').select('*').eq('pedido_id',order.id).order('id',{ascending:true});
+    if(detailErr)throw detailErr;
+    const pdfDoc=await generateOrderPDF(order,details||[]);
+    pdfDoc.save(`pedido-${order.id}.pdf`);
+    const lines=details.map(i=>`• ${i.cantidad} x ${i.producto_nombre}${i.variant_nombre?' ('+i.variant_nombre+')':''} — ${money(i.cantidad*i.precio_unitario)}`);
+    const entregaTexto=payload.tipo_entrega==='recoger'?'🏪 Recoger en tienda\nUbicación: Tegucigalpa, Honduras':'🚚 Enviar a domicilio\nCosto de envío: '+money(payload.costo_envio)+'\nDirección: '+payload.direccion;
+    const wa=`Hola, quiero confirmar mi pedido #${order.id}.\n\n${lines.join('\n')}\n\nSubtotal: ${money(cartSubtotal())}\nDescuento: ${money(discountAmount())}\nImpuesto sobre venta (15%): L. 0.00\nCosto de envío: ${money(payload.costo_envio)}\nTotal: ${money(order.total)}\n\n${entregaTexto}\n\nCliente: ${payload.cliente_nombre}\nTeléfono: ${payload.cliente_telefono}${payload.notas?'\nNotas: '+payload.notas:''}`;
+    cart=[]; appliedCoupon=null; saveCart(); document.getElementById('checkout-form').reset(); closeModal(checkoutModal); window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(wa)}`,'_blank');
+    alert(`Pedido #${order.id} registrado. Se descargó el PDF y se abrirá WhatsApp.`);
+  }catch(err){ console.error(err); checkoutMsgEl.textContent='No se pudo completar el pedido: '+(err.message||err); checkoutMsgEl.className='form-msg error'; }
+  finally{submit.disabled=false;}
+});
+
+async function generateOrderPDF(order,details){
+  const {jsPDF}=window.jspdf; const doc=new jsPDF();
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text(BUSINESS_NAME,20,20);
+  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.text('Resumen de pedido',20,28); doc.text(`Pedido #${order.id}`,150,20); doc.text(new Date(order.fecha||Date.now()).toLocaleString('es-HN'),150,27);
+  doc.text(`Cliente: ${order.cliente_nombre}`,20,40); doc.text(`Teléfono: ${order.cliente_telefono}`,20,47); doc.text(`Entrega: ${order.tipo_entrega==='recoger'?'Recoger en tienda':'Enviar a domicilio'}`,20,54);
+  doc.text(`Dirección: ${order.direccion}`,20,61);
+  if(order.notas) doc.text(`Notas: ${order.notas}`,20,68);
+  const rows=details.map(i=>[i.cantidad,i.producto_nombre+(i.variant_nombre?` (${i.variant_nombre})`:''),money(i.precio_unitario),money(i.cantidad*i.precio_unitario)]);
+  doc.autoTable({startY:75,head:[['Cant.','Producto','Precio','Importe']],body:rows,theme:'grid',headStyles:{fillColor:[61,43,31]}});
+  let y=doc.lastAutoTable.finalY+10; doc.text(`Subtotal: ${money(order.subtotal)}`,130,y); doc.text(`Descuento: ${money(order.descuento_aplicado)}`,130,y+7); doc.text('Impuesto sobre venta (15%): L. 0.00',130,y+14); doc.text(`Costo de envío: ${money(order.costo_envio||0)}`,130,y+21); doc.setFont('helvetica','bold'); doc.text(`TOTAL: ${money(order.total)}`,130,y+30); doc.setFont('helvetica','normal'); doc.text('Estado: Pendiente / Por facturar',20,y+30);
+  return doc;
+}
+updateCartUI();
+
+/* ---------- PEDIDOS WEB EN ADMIN ---------- */
+const ordersListEl=document.getElementById('orders-list'); const ordersSearchEl=document.getElementById('orders-search'); let adminOrders=[];
+async function renderOrdersList(){
+  ordersListEl.innerHTML='<p class="orders-empty">Cargando pedidos...</p>';
+  const {data,error}=await sb.from('pedidos').select('*').order('fecha',{ascending:false});
+  if(error){ordersListEl.innerHTML=`<p class="orders-empty" style="color:var(--brick);">No se pudieron cargar los pedidos: ${error.message}</p>`;return;}
+  adminOrders=data||[]; const ids=adminOrders.map(o=>o.id); let details=[];
+  if(ids.length){const r=await sb.from('detalle_pedidos').select('*').in('pedido_id',ids); if(r.error){ordersListEl.innerHTML='<p class="orders-empty" style="color:var(--brick);">No se pudieron cargar los detalles.</p>';return;} details=r.data||[];}
+  adminOrders.forEach(o=>o._details=details.filter(d=>String(d.pedido_id)===String(o.id))); drawOrders();
+}
+function drawOrders(){
+  const term=(ordersSearchEl.value||'').trim().toLowerCase(); const rows=adminOrders.filter(o=>!term||String(o.id).includes(term)||(o.cliente_nombre||'').toLowerCase().includes(term)||(o.cliente_telefono||'').toLowerCase().includes(term));
+  if(!rows.length){ordersListEl.innerHTML='<p class="orders-empty">No hay pedidos que coincidan.</p>';return;}
+  ordersListEl.innerHTML='';
+  rows.forEach(o=>{const card=document.createElement('div');card.className='order-admin-card';const fact=o.estado==='Facturado';
+    const items=(o._details||[]).map(d=>`<div class="order-item-line"><span>${d.cantidad} × ${d.producto_nombre||('Producto #'+d.producto_id)}${d.variant_nombre?' ('+d.variant_nombre+')':''}</span><strong>${money(d.cantidad*d.precio_unitario)}</strong></div>`).join('');
+    const entregaAdmin=o.tipo_entrega==='recoger'?'🏪 Recoger en tienda':'🚚 Enviar a domicilio';
+    card.innerHTML=`<div class="order-admin-head"><div><div class="order-admin-client">${o.cliente_nombre}</div><div class="order-admin-id">Pedido #${o.id} · ${new Date(o.fecha).toLocaleString('es-HN')}</div><div class="order-admin-meta">📞 ${o.cliente_telefono}</div><div class="order-admin-meta">${entregaAdmin} · 📍 ${o.direccion}</div>${o.notas?`<div class="order-admin-meta">📝 ${o.notas}</div>`:''}</div><span class="order-status ${fact?'facturado':''}">${o.estado}</span></div><div class="order-items-list">${items||'<em>Sin detalles</em>'}</div><div class="summary-row"><span>Impuesto sobre venta (15%)</span><strong>L. 0.00</strong></div><div class="summary-row"><span>Costo de envío</span><strong>${money(o.costo_envio||0)}</strong></div><div class="summary-row total"><span>Total</span><strong>${money(o.total)}</strong></div><div class="order-admin-actions"><button class="order-invoice-btn" ${fact?'disabled':''}>${fact?'✓ Facturado':'Facturar / Descontar Inventario'}</button></div>`;
+    const btn=card.querySelector('.order-invoice-btn'); if(!fact)btn.onclick=()=>invoiceOrder(o,btn); ordersListEl.appendChild(card);
+  });
+}
+async function invoiceOrder(order,btn){
+  if(!confirm(`¿Confirmas facturar el pedido #${order.id} y descontar su inventario? Esta acción no se puede deshacer.`))return;
+  btn.disabled=true; btn.textContent='Procesando...';
+  const {data,error}=await sb.rpc('facturar_pedido',{p_pedido_id:order.id});
+  if(error){alert('No se pudo facturar: '+error.message);btn.disabled=false;btn.textContent='Facturar / Descontar Inventario';return;}
+  alert(`Pedido #${order.id} facturado correctamente. Inventario descontado.`); await loadProductVariants(); await loadProducts(); await renderOrdersList(); if(document.getElementById('admin-tab-inventory').classList.contains('active'))renderInventoryList();
+}
+ordersSearchEl.addEventListener('input',drawOrders);
+
 </script>
 </body>
 </html>
