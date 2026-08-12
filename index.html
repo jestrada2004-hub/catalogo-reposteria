@@ -388,11 +388,21 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
+    flex-wrap:wrap;
     gap:.6rem;
     margin-top:.3rem;
     padding-top:.6rem;
     border-top:1px dashed #cbb98d;
   }
+  .card-actions{
+    display:flex;
+    gap:.5rem;
+    flex-wrap:wrap;
+    flex:1;
+    justify-content:flex-end;
+    min-width:0;
+  }
+  .card-actions .wa-btn{white-space:nowrap;}
   .price-tag{
     font-family:'IBM Plex Mono',monospace;
     font-weight:600;
@@ -545,6 +555,34 @@
   }
   @media (prefers-reduced-motion:reduce){
     .cat-card-wrap,.cat-card:hover,.cat-quad img{animation:none;transition:none;transform:none;}
+  }
+
+  /* ---------- TARJETAS DE PRODUCTO MÁS GRANDES EN MÓVIL ---------- */
+  @media (max-width:640px){
+    .grid{
+      grid-template-columns:1fr;
+      gap:1.6rem;
+    }
+    .cat-grid{
+      grid-template-columns:1fr;
+      gap:1.6rem;
+    }
+    .card-body{
+      padding:1.4rem 1.4rem 1.6rem;
+      gap:.6rem;
+    }
+    .card-category{font-size:.72rem;}
+    .card-name{font-size:1.4rem;}
+    .card-desc{font-size:1rem;line-height:1.5;}
+    .price-tag{font-size:1.25rem;padding:.3rem .75rem;}
+    .price-original{font-size:.9rem;}
+    .wa-btn{font-size:.92rem;padding:.65rem 1rem;}
+    .color-swatch{width:24px;height:24px;}
+    .cat-card-name span:first-child{font-size:1.6rem;}
+    .cat-card-count{font-size:.8rem;}
+    .card-footer{flex-direction:column;align-items:stretch;}
+    .card-actions{flex-direction:column;width:100%;}
+    .card-actions .wa-btn{width:100%;justify-content:center;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -745,9 +783,7 @@
   .admin-tab-panel.active{display:block;}
 
   /* ---------- INVENTARIO ---------- */
-  .inventory-toolbar{display:flex;align-items:center;gap:.65rem;margin-bottom:.55rem;}
   #inventory-search{
-    flex:1;
     width:100%;
     padding:.65rem .9rem;
     border:2px solid var(--parchment-dark);
@@ -756,28 +792,7 @@
     font-size:.88rem;
     background:#fff;
     outline:none;
-    margin-bottom:0;
-  }
-  .inventory-save-all-btn{
-    flex:none;
-    border:none;
-    border-radius:7px;
-    padding:.68rem .95rem;
-    background:var(--espresso);
-    color:var(--butter);
-    font-family:'Inter',sans-serif;
-    font-weight:700;
-    font-size:.8rem;
-    cursor:pointer;
-    transition:opacity .15s, transform .15s;
-  }
-  .inventory-save-all-btn:hover:not(:disabled){opacity:.9;transform:translateY(-1px);}
-  .inventory-save-all-btn:disabled{opacity:.45;cursor:not-allowed;}
-  .inventory-save-status{min-height:1.1rem;margin:0 0 .65rem;font:600 .72rem 'IBM Plex Mono',monospace;color:#2c7a4b;}
-  .inventory-save-status.error{color:var(--brick);}
-  @media(max-width:700px){
-    .inventory-toolbar{flex-direction:column;align-items:stretch;}
-    .inventory-save-all-btn{width:100%;}
+    margin-bottom:1rem;
   }
   #inventory-search:focus{border-color:var(--butter);}
 
@@ -841,34 +856,7 @@
     overflow:hidden;
     text-overflow:ellipsis;
   }
-  .inv-variant-image{
-    width:42px;height:42px;object-fit:cover;border-radius:5px;flex:none;
-    background:var(--parchment-dark);border:1px solid var(--parchment-dark);
-  }
-  .inv-color-name small{display:block;font: .66rem 'IBM Plex Mono',monospace;color:#8a7960;margin-top:2px;}
-  .inv-rgb{font: .68rem 'IBM Plex Mono',monospace;color:#8a7960;min-width:68px;text-align:center;flex:none;}
-  .inv-swatch-empty{background:linear-gradient(135deg,#eee 45%,#bbb 45%,#bbb 55%,#eee 55%);}
-  .inv-product-stock-row{padding:.35rem 0;}
-  .inv-product-stock-row .inv-color-name{display:flex;flex-direction:column;}
-  @media(max-width:700px){
-    .inv-rgb{display:none;}
-    .inv-variant-image{width:38px;height:38px;}
-  }
-  .inv-image-url{
-  flex:2 1 260px;
-  min-width:180px;
-  font-size:.72rem;
-  line-height:1.25;
-  font-family:'IBM Plex Mono',monospace;
-  overflow-wrap:anywhere;
-  color:#6f604d;
-}
-.inv-image-url strong{color:var(--espresso);font-family:'Inter',sans-serif;}
-.inv-image-url a{color:var(--espresso);text-decoration:underline;}
-.inv-image-url small{font-family:'Inter',sans-serif;color:#8a7960;}
-.inv-color-name small{display:block;font-size:.68rem;color:#8a7960;margin-top:2px;}
-.inv-swatch{width:28px;height:28px;}
-.inv-qty-input{
+  .inv-qty-input{
     width:64px;
     padding:.4rem .5rem;
     border:2px solid var(--parchment-dark);
@@ -1223,7 +1211,7 @@
 .cart-fab:hover{transform:translateY(-3px);background:var(--espresso-soft)}
 .cart-count{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:var(--sale);color:#fff;font:600 .7rem 'IBM Plex Mono',monospace;display:flex;align-items:center;justify-content:center}
 .cart-box{max-width:680px}.cart-items{display:flex;flex-direction:column;gap:.65rem}.cart-item{display:grid;grid-template-columns:64px 1fr auto;gap:.7rem;align-items:center;padding:.65rem;background:#fff;border:1px solid var(--parchment-dark);border-radius:8px}.cart-item img{width:64px;height:64px;object-fit:cover;border-radius:6px;background:var(--parchment-dark)}.cart-item-name{font-family:'Fraunces',serif;font-weight:600}.cart-item-meta{font-size:.75rem;color:#8a7960;margin-top:.15rem}.cart-item-actions{display:flex;align-items:center;gap:.35rem;margin-top:.45rem}.qty-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--parchment-dark);background:var(--parchment);cursor:pointer;font-weight:700}.qty-num{min-width:28px;text-align:center;font-family:'IBM Plex Mono',monospace}.remove-item{border:none;background:none;color:var(--brick);cursor:pointer;font-size:.75rem;margin-left:.25rem}.cart-price{font-family:'IBM Plex Mono',monospace;font-weight:600;white-space:nowrap}.cart-summary{margin-top:1rem;padding-top:1rem;border-top:1px dashed #cbb98d}.summary-row{display:flex;justify-content:space-between;gap:1rem;margin:.35rem 0;font-family:'IBM Plex Mono',monospace;font-size:.85rem}.summary-row.total{font-size:1.05rem;font-weight:700;color:var(--espresso);padding-top:.5rem}.coupon-row{display:flex;gap:.5rem;margin-top:.8rem}.coupon-row input{flex:1;padding:.65rem .8rem;border:2px solid var(--parchment-dark);border-radius:6px}.coupon-row button{border:none;border-radius:6px;background:var(--butter);color:var(--espresso);font-weight:700;padding:.65rem .8rem;cursor:pointer}.coupon-msg{font:.72rem 'IBM Plex Mono',monospace;margin-top:.35rem}.coupon-msg.ok{color:#2c7a4b}.coupon-msg.err{color:var(--brick)}.checkout-form{margin-top:1rem}.checkout-form .form-group{margin-bottom:.75rem}.delivery-options{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin:.35rem 0 .9rem}.delivery-option{display:flex;align-items:flex-start;gap:.55rem;padding:.8rem;border:2px solid var(--parchment-dark);border-radius:8px;background:#fff;cursor:pointer}.delivery-option.selected{border-color:var(--espresso);background:#fff9e9}.delivery-option input{margin-top:.2rem;accent-color:var(--espresso)}.delivery-option strong{display:block;font-size:.85rem}.delivery-option small{display:block;color:#8a7960;margin-top:.15rem}.pickup-location{padding:.7rem .8rem;background:#f7f0df;border:1px dashed #cbb98d;border-radius:7px;font-size:.78rem;color:#6e5b4a;margin:-.25rem 0 .8rem}.shipping-note{font:.72rem 'IBM Plex Mono',monospace;color:#8a7960;margin-top:.25rem}@media(max-width:600px){.delivery-options{grid-template-columns:1fr}}.checkout-empty{text-align:center;padding:1.5rem;font-family:'Fraunces',serif;font-style:italic;color:#8a7960}
-.order-admin-card{background:#fff;border:1px solid var(--parchment-dark);border-radius:8px;padding:.85rem;margin-bottom:.75rem}.order-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.7rem}.order-admin-id{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--brick)}.order-admin-client{font-weight:700;font-size:.95rem}.order-admin-meta{font-size:.78rem;color:#6e5b4a;margin-top:.2rem}.order-status{font:600 .65rem 'IBM Plex Mono',monospace;text-transform:uppercase;padding:.25rem .55rem;border-radius:999px;background:#fff0d8;color:#8a5a00;white-space:nowrap}.order-status.facturado{background:#dff0e4;color:#2c7a4b}.order-items-list{margin:.7rem 0;padding:.65rem .8rem;border-top:1px dashed #cbb98d;border-bottom:1px dashed #cbb98d;font-size:.8rem}.order-item-line{display:flex;justify-content:space-between;gap:.6rem;margin:.2rem 0}.order-admin-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:.5rem;margin-top:.65rem}.order-admin-actions button{border:none;border-radius:999px;padding:.5rem .8rem;cursor:pointer;font-weight:700}.order-invoice-btn{background:var(--espresso);color:var(--butter)}.order-invoice-btn:disabled{opacity:.45;cursor:not-allowed}.order-edit-btn{background:var(--butter);color:var(--espresso)}.order-cancel-btn{background:var(--brick);color:#fff}.order-item-line{align-items:center}.order-item-remove{border:none;background:var(--brick);color:#fff;border-radius:50%;width:22px;height:22px;font-size:.68rem;cursor:pointer;margin-left:.5rem;flex:none}.order-discount-edit{display:flex;align-items:center;gap:.5rem;margin:.6rem 0;padding:.6rem .7rem;background:#fff9e9;border:1px dashed #cbb98d;border-radius:7px}.order-discount-edit label{font:.72rem 'IBM Plex Mono',monospace;color:var(--brick);white-space:nowrap}.order-discount-edit input{width:110px;padding:.4rem .5rem;border:2px solid var(--parchment-dark);border-radius:6px;font-family:'IBM Plex Mono',monospace}.order-discount-edit button{border:none;border-radius:6px;background:var(--espresso);color:var(--butter);padding:.4rem .7rem;font-weight:700;cursor:pointer}.order-cancelado{opacity:.6}.order-status.cancelado{background:#f5dede;color:var(--brick)}.orders-toolbar{display:flex;gap:.5rem;margin-bottom:.9rem;flex-wrap:wrap}.orders-toolbar input,.orders-toolbar select{flex:1;min-width:150px;padding:.65rem .8rem;border:2px solid var(--parchment-dark);border-radius:6px;background:#fff}.orders-toolbar .orders-clear-btn{flex:0 0 auto;border:none;border-radius:6px;background:var(--parchment);color:var(--espresso);padding:.65rem .85rem;font-weight:700;cursor:pointer}.orders-toolbar .orders-clear-btn:hover{background:var(--parchment-dark)}.orders-history-note{font:.72rem 'IBM Plex Mono',monospace;color:#8a7960;margin:-.3rem 0 .8rem}.order-history-card{opacity:.96}.order-delete-btn{background:var(--brick);color:#fff}.orders-empty{font:.8rem 'IBM Plex Mono',monospace;color:#8a7960;padding:1rem 0}
+.order-admin-card{background:#fff;border:1px solid var(--parchment-dark);border-radius:8px;padding:.85rem;margin-bottom:.75rem}.order-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.7rem}.order-admin-id{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--brick)}.order-admin-client{font-weight:700;font-size:.95rem}.order-admin-meta{font-size:.78rem;color:#6e5b4a;margin-top:.2rem}.order-status{font:600 .65rem 'IBM Plex Mono',monospace;text-transform:uppercase;padding:.25rem .55rem;border-radius:999px;background:#fff0d8;color:#8a5a00;white-space:nowrap}.order-status.facturado{background:#dff0e4;color:#2c7a4b}.order-items-list{margin:.7rem 0;padding:.65rem .8rem;border-top:1px dashed #cbb98d;border-bottom:1px dashed #cbb98d;font-size:.8rem}.order-item-line{display:flex;justify-content:space-between;gap:.6rem;margin:.2rem 0}.order-admin-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:.5rem;margin-top:.65rem}.order-admin-actions button{border:none;border-radius:999px;padding:.5rem .8rem;cursor:pointer;font-weight:700}.order-invoice-btn{background:var(--espresso);color:var(--butter)}.order-invoice-btn:disabled{opacity:.45;cursor:not-allowed}.order-edit-btn{background:var(--butter);color:var(--espresso)}.order-cancel-btn{background:var(--brick);color:#fff}.order-item-line{align-items:center}.order-item-remove{border:none;background:var(--brick);color:#fff;border-radius:50%;width:22px;height:22px;font-size:.68rem;cursor:pointer;margin-left:.5rem;flex:none}.order-discount-edit{display:flex;align-items:center;gap:.5rem;margin:.6rem 0;padding:.6rem .7rem;background:#fff9e9;border:1px dashed #cbb98d;border-radius:7px}.order-discount-edit label{font:.72rem 'IBM Plex Mono',monospace;color:var(--brick);white-space:nowrap}.order-discount-edit input{width:110px;padding:.4rem .5rem;border:2px solid var(--parchment-dark);border-radius:6px;font-family:'IBM Plex Mono',monospace}.order-discount-edit button{border:none;border-radius:6px;background:var(--espresso);color:var(--butter);padding:.4rem .7rem;font-weight:700;cursor:pointer}.order-cancelado{opacity:.6}.order-status.cancelado{background:#f5dede;color:var(--brick)}.orders-toolbar{display:flex;gap:.5rem;margin-bottom:.9rem}.orders-toolbar input{flex:1;padding:.65rem .8rem;border:2px solid var(--parchment-dark);border-radius:6px}.orders-empty{font:.8rem 'IBM Plex Mono',monospace;color:#8a7960;padding:1rem 0}
 @media(max-width:600px){.cart-fab{right:.8rem;bottom:.8rem}.cart-item{grid-template-columns:52px 1fr}.cart-item img{width:52px;height:52px}.cart-price{grid-column:2}.order-admin-head{flex-direction:column}}
 
 </style>
@@ -1314,7 +1302,6 @@
       <button type="button" class="admin-tab-btn active" data-admin-tab="product">Administración de producto</button>
       <button type="button" class="admin-tab-btn" data-admin-tab="inventory">Inventario</button>
       <button type="button" class="admin-tab-btn" data-admin-tab="orders">Pedidos Web</button>
-      <button type="button" class="admin-tab-btn" data-admin-tab="history">Historial de pedidos</button>
       <button type="button" class="admin-tab-btn" data-admin-tab="visits">Visitas</button>
     </div>
 
@@ -1409,11 +1396,7 @@
 
       <!-- ===== PESTAÑA: INVENTARIO ===== -->
       <div class="admin-tab-panel" id="admin-tab-inventory">
-        <div class="inventory-toolbar">
-          <input id="inventory-search" type="text" placeholder="Buscar producto en inventario...">
-          <button type="button" id="inventory-save-all" class="inventory-save-all-btn" disabled>💾 Guardar todos los cambios</button>
-        </div>
-        <div id="inventory-save-status" class="inventory-save-status" aria-live="polite"></div>
+        <input id="inventory-search" type="text" placeholder="Buscar producto en inventario...">
         <div id="inventory-list">
           <p style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:#8a7960;">Cargando...</p>
         </div>
@@ -1423,22 +1406,6 @@
       <div class="admin-tab-panel" id="admin-tab-orders">
         <div class="orders-toolbar"><input id="orders-search" type="text" placeholder="Buscar por cliente, teléfono o número de pedido..."></div>
         <div id="orders-list"><p class="orders-empty">Cargando...</p></div>
-      </div>
-
-      <!-- ===== PESTAÑA: HISTORIAL DE PEDIDOS ===== -->
-      <div class="admin-tab-panel" id="admin-tab-history">
-        <div class="orders-toolbar">
-          <input id="history-search" type="text" placeholder="Buscar por pedido, cliente, teléfono, dirección, notas o producto...">
-          <input id="history-date" type="date" title="Buscar por fecha">
-          <select id="history-status" title="Filtrar por estado">
-            <option value="">Todos los estados</option>
-            <option value="Facturado">Facturados</option>
-            <option value="Cancelado">Cancelados</option>
-          </select>
-          <button type="button" id="history-clear" class="orders-clear-btn">Limpiar filtros</button>
-        </div>
-        <div class="orders-history-note">Aquí aparecen automáticamente los pedidos <strong>Facturados</strong> y <strong>Cancelados</strong>. Los pedidos activos permanecen en “Pedidos Web”.</div>
-        <div id="history-list"><p class="orders-empty">Cargando...</p></div>
       </div>
 
       <!-- ===== PESTAÑA: VISITAS ===== -->
@@ -1815,11 +1782,13 @@ function renderGrid(){
         ${swatchesHtml}
         <div class="card-footer">
           ${priceBlock}
-          <button class="wa-btn cart-add-btn" type="button">🛒 Agregar</button>
-           <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.51 2 12.04 2zm0 18.05h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.19 3.7.59.25 1.04.4 1.4.51.59.19 1.12.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.16-.48-.28z"/></svg>
-            Consultar
-          </a>
+          <div class="card-actions">
+            <button class="wa-btn cart-add-btn" type="button">🛒 Agregar</button>
+            <a class="wa-btn" href="${waLink(p)}" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.51 2 12.04 2zm0 18.05h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.19 3.7.59.25 1.04.4 1.4.51.59.19 1.12.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.16-.48-.28z"/></svg>
+              Consultar
+            </a>
+          </div>
         </div>
       </div>
     `;
@@ -1875,7 +1844,7 @@ function renderCategoryTiles(){
 
     const tile = document.createElement('div');
     tile.className = 'cat-card';
-    tile.title = 'Doble clic para ver ' + cat.name;
+    tile.title = 'Ver ' + cat.name;
 
     const quadWrap = document.createElement('div');
     quadWrap.className = 'cat-card-img-wrap';
@@ -1901,7 +1870,7 @@ function renderCategoryTiles(){
     wrap.appendChild(nameBlock);
     wrap.appendChild(tile);
 
-    tile.addEventListener('dblclick', () => {
+    tile.addEventListener('click', () => {
       goToCategory(cat.name, { scroll:true });
     });
 
@@ -2138,16 +2107,12 @@ function switchAdminTab(tab){
   document.getElementById('admin-tab-product').classList.toggle('active', tab === 'product');
   document.getElementById('admin-tab-inventory').classList.toggle('active', tab === 'inventory');
   document.getElementById('admin-tab-orders').classList.toggle('active', tab === 'orders');
-  document.getElementById('admin-tab-history').classList.toggle('active', tab === 'history');
   document.getElementById('admin-tab-visits').classList.toggle('active', tab === 'visits');
   if(tab === 'inventory'){
     renderInventoryList();
   }
   if(tab === 'orders'){
     renderOrdersList();
-  }
-  if(tab === 'history'){
-    renderOrderHistory();
   }
   if(tab === 'visits'){
     renderVisitsStats();
@@ -2474,101 +2439,8 @@ async function renderAdminList(){
    ========================================================= */
 const inventoryListEl = document.getElementById('inventory-list');
 const inventorySearchEl = document.getElementById('inventory-search');
-const inventorySaveAllBtn = document.getElementById('inventory-save-all');
-const inventorySaveStatus = document.getElementById('inventory-save-status');
 let inventoryProducts = [];
 let variantsByProduct = {}; // { product_id: [ {id, color_name, color_hex, stock}, ... ] }
-let pendingInventoryChanges = {}; // { key: { type:'variant'|'product', id, stock } }
-
-function updateInventorySaveButton(){
-  const count = Object.keys(pendingInventoryChanges).length;
-  inventorySaveAllBtn.disabled = count === 0;
-  inventorySaveAllBtn.textContent = count
-    ? `💾 Guardar ${count} cambio${count === 1 ? '' : 's'}`
-    : '💾 Guardar todos los cambios';
-}
-
-function setInventorySaveStatus(message, isError = false){
-  inventorySaveStatus.textContent = message || '';
-  inventorySaveStatus.classList.toggle('error', isError);
-}
-
-function markInventoryChange(type, id, value){
-  const newQty = Math.max(0, parseInt(value, 10) || 0);
-  let original = 0;
-  if(type === 'variant'){
-    const variant = Object.values(variantsByProduct).flat().find(v => String(v.id) === String(id));
-    if(!variant) return;
-    original = Number(variant.stock || 0);
-  }else{
-    const product = inventoryProducts.find(p => String(p.id) === String(id));
-    if(!product) return;
-    original = Number(product.stock || 0);
-  }
-  const key = `${type}:${id}`;
-  if(newQty === original){
-    delete pendingInventoryChanges[key];
-  }else{
-    pendingInventoryChanges[key] = { type, id, stock: newQty };
-  }
-  updateInventorySaveButton();
-  setInventorySaveStatus(Object.keys(pendingInventoryChanges).length ? 'Hay cambios pendientes por guardar.' : '');
-}
-
-async function saveAllInventoryChanges(){
-  const entries = Object.values(pendingInventoryChanges);
-  if(!entries.length) return;
-
-  inventorySaveAllBtn.disabled = true;
-  inventorySaveAllBtn.textContent = '⏳ Guardando...';
-  setInventorySaveStatus('Guardando cambios en el inventario...');
-
-  const results = await Promise.all(entries.map(async change => {
-    let response;
-    if(change.type === 'variant'){
-      response = await sb.from('product_variants').update({ stock: change.stock }).eq('id', change.id);
-    }else{
-      response = await sb.from('products').update({ stock: change.stock }).eq('id', change.id);
-    }
-    return { ...change, error: response.error };
-  }));
-
-  const failed = results.filter(r => r.error);
-  const saved = results.filter(r => !r.error);
-
-  saved.forEach(r => {
-    if(r.type === 'variant'){
-      const v = Object.values(variantsByProduct).flat().find(x => String(x.id) === String(r.id));
-      if(v) v.stock = r.stock;
-    }else{
-      const product = inventoryProducts.find(x => String(x.id) === String(r.id));
-      if(product) product.stock = r.stock;
-    }
-    delete pendingInventoryChanges[`${r.type}:${r.id}`];
-  });
-
-  const affectedProducts = new Set();
-  saved.forEach(r => {
-    if(r.type === 'variant'){
-      const productEntry = Object.entries(variantsByProduct).find(([, rows]) => rows.some(v => String(v.id) === String(r.id)));
-      if(productEntry) affectedProducts.add(productEntry[0]);
-    }else{
-      affectedProducts.add(r.id);
-    }
-  });
-
-  for(const productId of affectedProducts){
-    await syncProductAvailability(productId);
-  }
-
-  updateInventorySaveButton();
-  if(failed.length){
-    setInventorySaveStatus(`Se guardaron ${saved.length} cambio${saved.length === 1 ? '' : 's'}, pero ${failed.length} no pudieron guardarse.`, true);
-  }else{
-    setInventorySaveStatus(`✓ ${saved.length} cambio${saved.length === 1 ? '' : 's'} guardado${saved.length === 1 ? '' : 's'} correctamente.`);
-  }
-  drawInventoryList();
-}
 
 async function renderInventoryList(){
   inventoryListEl.innerHTML = '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;color:#8a7960;">Cargando...</p>';
@@ -2595,11 +2467,7 @@ async function renderInventoryList(){
 
 function productTotalStock(productId){
   const rows = variantsByProduct[productId] || [];
-  if(rows.length){
-    return rows.reduce((sum, r) => sum + (Number(r.stock) || 0), 0);
-  }
-  const product = inventoryProducts.find(p => String(p.id) === String(productId));
-  return Number(product?.stock) || 0;
+  return rows.reduce((sum, r) => sum + (r.stock || 0), 0);
 }
 
 async function syncProductAvailability(productId){
@@ -2703,24 +2571,8 @@ function updateProductHeadBadge(wrapEl, productId){
 function drawColorRows(container, p){
   const rows = variantsByProduct[p.id] || [];
 
-  // Si el producto no tiene variantes de color, se edita directamente products.stock.
-  // Se muestra su imagen principal y se conserva el stock que ya tiene el producto.
   if(rows.length === 0){
-    container.innerHTML = '';
-    const row = document.createElement('div');
-    row.className = 'inv-color-row inv-product-stock-row';
-    row.innerHTML = `
-      <img class="inv-variant-image" src="${p.image_url || 'https://placehold.co/60x60/E8C5C8/3D2B1F?text=—'}" alt="${p.name}" title="Imagen principal del producto">
-      <div class="inv-image-url"><strong>Imagen:</strong> ${p.image_url ? `<a href="${p.image_url}" target="_blank" rel="noopener">${p.image_url}</a>` : 'Sin URL asociada'}</div>
-      <span class="inv-swatch inv-swatch-empty" title="Sin color asociado"></span>
-      <span class="inv-color-name"><strong>Producto</strong><small>Sin color asociado</small></span>
-      <span class="inv-rgb">—</span>
-      <input type="number" min="0" step="1" class="inv-qty-input" value="${Number(p.stock) || 0}" title="Cantidad de este producto">
-    `;
-    const qtyInput = row.querySelector('.inv-qty-input');
-    qtyInput.addEventListener('input', () => markInventoryChange('product', p.id, qtyInput.value));
-    qtyInput.addEventListener('change', () => markInventoryChange('product', p.id, qtyInput.value));
-    container.appendChild(row);
+    container.innerHTML = '<div class="inv-no-colors">Todavía no hay colores registrados para este producto.</div>';
     return;
   }
 
@@ -2734,34 +2586,26 @@ function drawColorRows(container, p){
 
       if(editing){
         row.innerHTML = `
-          <img class="inv-variant-image" src="${v.image_url || p.image_url || 'https://placehold.co/60x60/E8C5C8/3D2B1F?text=—'}" alt="${v.color_name}" title="Imagen del producto/color">
-          <div class="inv-image-url"><strong>Imagen:</strong> ${v.image_url ? `<a href="${v.image_url}" target="_blank" rel="noopener">${v.image_url}</a>` : (p.image_url ? `<a href="${p.image_url}" target="_blank" rel="noopener">${p.image_url}</a> <small>(principal)</small>` : 'Sin URL asociada')}</div>
-          <input type="color" class="inv-color-picker" value="${v.color_hex || '#cccccc'}" title="Color RGB">
-          <input type="text" class="inv-color-name-input" value="${v.color_name || ''}" placeholder="Nombre del color">
-          <span class="inv-rgb">${v.color_hex || '—'}</span>
-          <input type="number" min="0" step="1" class="inv-qty-input" value="${Number(v.stock) || 0}">
-          <input type="url" class="inv-color-image-input" value="${v.image_url || ''}" placeholder="URL de foto del color">
+          <input type="color" class="inv-color-picker" value="${v.color_hex || '#cccccc'}" title="Color">
+          <input type="text" class="inv-color-name-input" value="${v.color_name}" placeholder="Nombre del color">
+          <input type="number" min="0" step="1" class="inv-qty-input" value="${v.stock || 0}">
+          <input type="url" class="inv-color-image-input" value="${v.image_url || ''}" placeholder="URL de la foto de este color">
           <button type="button" class="inv-icon-btn edit active" title="Cerrar edición">✖️</button>
           <button type="button" class="inv-icon-btn save" title="Guardar cambios">💾</button>
           <button type="button" class="inv-icon-btn delete" title="Eliminar color">🗑</button>
         `;
       }else{
         row.innerHTML = `
-          <img class="inv-variant-image" src="${v.image_url || p.image_url || 'https://placehold.co/60x60/E8C5C8/3D2B1F?text=—'}" alt="${v.color_name}" title="Imagen del producto/color">
-          <div class="inv-image-url"><strong>Imagen:</strong> ${v.image_url ? `<a href="${v.image_url}" target="_blank" rel="noopener">${v.image_url}</a>` : (p.image_url ? `<a href="${p.image_url}" target="_blank" rel="noopener">${p.image_url}</a> <small>(principal)</small>` : 'Sin URL asociada')}</div>
-          <span class="inv-swatch" style="background:${v.color_hex || '#cccccc'};" title="Color: ${v.color_name || 'Sin nombre'} · RGB/HEX: ${v.color_hex || 'no asociado'}"></span>
-          <span class="inv-color-name"><strong>${v.color_name || 'Sin nombre'}</strong><small>Color registrado</small></span>
-          <span class="inv-rgb">${v.color_hex || '—'}</span>
-          <input type="number" min="0" step="1" class="inv-qty-input" value="${Number(v.stock) || 0}">
-          <button type="button" class="inv-icon-btn edit" title="Editar color, RGB e imagen">✏️</button>
+          <span class="inv-swatch" style="background:${v.color_hex || '#cccccc'};"></span>
+          <span class="inv-color-name">${v.color_name}</span>
+          <input type="number" min="0" step="1" class="inv-qty-input" value="${v.stock || 0}">
+          <button type="button" class="inv-icon-btn edit" title="Editar color">✏️</button>
           <button type="button" class="inv-icon-btn save" title="Guardar cantidad">💾</button>
           <button type="button" class="inv-icon-btn delete" title="Eliminar color">🗑</button>
         `;
       }
 
       const qtyInput = row.querySelector('.inv-qty-input');
-      qtyInput.addEventListener('input', () => markInventoryChange('variant', v.id, qtyInput.value));
-      qtyInput.addEventListener('change', () => markInventoryChange('variant', v.id, qtyInput.value));
       const editBtn = row.querySelector('.inv-icon-btn.edit');
       const saveBtn = row.querySelector('.inv-icon-btn.save');
       const deleteBtn = row.querySelector('.inv-icon-btn.delete');
@@ -2776,7 +2620,7 @@ function drawColorRows(container, p){
       });
 
       saveBtn.addEventListener('click', async () => {
-        const newQty = Math.max(0, parseInt(qtyInput.value, 10) || 0);
+        const newQty = Math.max(0, parseInt(qtyInput.value) || 0);
         const payload = { stock: newQty };
         if(editing){
           const newName = nameInput.value.trim();
@@ -2797,14 +2641,12 @@ function drawColorRows(container, p){
         }
 
         v.stock = newQty;
-        delete pendingInventoryChanges[`variant:${v.id}`];
         if(editing){
           v.color_name = payload.color_name;
           v.color_hex = payload.color_hex;
           v.image_url = payload.image_url;
           editing = false;
         }
-        updateInventorySaveButton();
         drawColorRows(container, p);
         updateProductHeadBadge(container.closest('.inv-product'), p.id);
         await syncProductAvailability(p.id);
@@ -2817,9 +2659,7 @@ function drawColorRows(container, p){
           alert('No se pudo eliminar: ' + error.message);
           return;
         }
-        delete pendingInventoryChanges[`variant:${v.id}`];
         variantsByProduct[p.id] = (variantsByProduct[p.id] || []).filter(x => x.id !== v.id);
-        updateInventorySaveButton();
         drawColorRows(container, p);
         updateProductHeadBadge(container.closest('.inv-product'), p.id);
         await syncProductAvailability(p.id);
@@ -2833,7 +2673,6 @@ function drawColorRows(container, p){
 }
 
 inventorySearchEl.addEventListener('input', drawInventoryList);
-inventorySaveAllBtn.addEventListener('click', saveAllInventoryChanges);
 
 /* =========================================================
    CONTADOR DE VISITANTES (pestaña "Visitas")
@@ -3158,103 +2997,61 @@ async function generateOrderPDF(order,details){
 updateCartUI();
 
 /* ---------- PEDIDOS WEB EN ADMIN ---------- */
-const ordersListEl=document.getElementById('orders-list');
-const ordersSearchEl=document.getElementById('orders-search');
-const historyListEl=document.getElementById('history-list');
-const historySearchEl=document.getElementById('history-search');
-const historyDateEl=document.getElementById('history-date');
-const historyStatusEl=document.getElementById('history-status');
-const historyClearEl=document.getElementById('history-clear');
-let adminOrders=[];
-let orderEditingId = null;
-
-async function loadAdminOrders(){
-  const {data,error}=await sb.from('pedidos').select('*').order('fecha',{ascending:false});
-  if(error) throw error;
-  adminOrders=data||[];
-  const ids=adminOrders.map(o=>o.id);
-  let details=[];
-  if(ids.length){
-    const r=await sb.from('detalle_pedidos').select('*').in('pedido_id',ids);
-    if(r.error) throw r.error;
-    details=r.data||[];
-  }
-  adminOrders.forEach(o=>o._details=details.filter(d=>String(d.pedido_id)===String(o.id)));
-}
-
+const ordersListEl=document.getElementById('orders-list'); const ordersSearchEl=document.getElementById('orders-search'); let adminOrders=[];
 async function renderOrdersList(){
   ordersListEl.innerHTML='<p class="orders-empty">Cargando pedidos...</p>';
-  try{ await loadAdminOrders(); drawOrders(); }
-  catch(error){ ordersListEl.innerHTML=`<p class="orders-empty" style="color:var(--brick);">No se pudieron cargar los pedidos: ${error.message}</p>`; }
+  const {data,error}=await sb.from('pedidos').select('*').order('fecha',{ascending:false});
+  if(error){ordersListEl.innerHTML=`<p class="orders-empty" style="color:var(--brick);">No se pudieron cargar los pedidos: ${error.message}</p>`;return;}
+  adminOrders=data||[]; const ids=adminOrders.map(o=>o.id); let details=[];
+  if(ids.length){const r=await sb.from('detalle_pedidos').select('*').in('pedido_id',ids); if(r.error){ordersListEl.innerHTML='<p class="orders-empty" style="color:var(--brick);">No se pudieron cargar los detalles.</p>';return;} details=r.data||[];}
+  adminOrders.forEach(o=>o._details=details.filter(d=>String(d.pedido_id)===String(o.id))); drawOrders();
 }
-
-function orderMatchesSearch(o,term){
-  if(!term) return true;
-  const detailText=(o._details||[]).map(d=>`${d.producto_nombre||''} ${d.variant_nombre||''}`).join(' ');
-  const haystack=[o.id,o.cliente_nombre,o.cliente_telefono,o.direccion,o.notas,o.tipo_entrega,o.estado,detailText].join(' ').toLowerCase();
-  return haystack.includes(term);
-}
-
-function buildOrderCard(o, options={}){
-  const fact=o.estado==='Facturado';
-  const cancel=o.estado==='Cancelado';
-  const editable=!fact && !cancel;
-  const editing = editable && orderEditingId===o.id;
-  const isHistory=!!options.history;
-  const card=document.createElement('div');
-  card.className='order-admin-card'+(cancel?' order-cancelado':'')+(isHistory?' order-history-card':'');
-  const items=(o._details||[]).map(d=>`<div class="order-item-line"><span>${d.cantidad} × ${d.producto_nombre||('Producto #'+d.producto_id)}${d.variant_nombre?' ('+d.variant_nombre+')':''}</span><span style="display:flex;align-items:center;"><strong>${money(d.cantidad*d.precio_unitario)}</strong>${editing?`<button type="button" class="order-item-remove" data-detalle-id="${d.id}" title="Quitar este producto del pedido">🗑</button>`:''}</span></div>`).join('');
-  const entregaAdmin=o.tipo_entrega==='recoger'?'🏪 Recoger en tienda':'🚚 Enviar a domicilio';
-  const statusClass=fact?'facturado':(cancel?'cancelado':'');
-  const discountEditHtml = editing ? `<div class="order-discount-edit"><label for="discount-input-${o.id}">Descuento (L.)</label><input type="number" min="0" step="0.01" id="discount-input-${o.id}" value="${Number(o.descuento_aplicado||0)}"><button type="button" class="order-save-discount-btn" data-pedido-id="${o.id}">Guardar descuento</button></div>` : '';
-  const deleteHtml = isHistory && cancel ? `<button type="button" class="order-delete-btn">Eliminar definitivamente</button>` : '';
-  const actions = isHistory
-    ? deleteHtml
-    : (editable ? `<button type="button" class="order-cancel-btn">Cancelar pedido</button><button type="button" class="order-edit-btn">${editing?'Listo':'Editar pedido'}</button><button type="button" class="order-invoice-btn">Facturar / Descontar Inventario</button>` : '');
-  card.innerHTML=`<div class="order-admin-head"><div><div class="order-admin-client">${o.cliente_nombre||'Sin nombre'}</div><div class="order-admin-id">Pedido #${o.id} · ${new Date(o.fecha).toLocaleString('es-HN')}</div><div class="order-admin-meta">📞 ${o.cliente_telefono||'Sin teléfono'}</div><div class="order-admin-meta">${entregaAdmin} · 📍 ${o.direccion||'Sin dirección'}</div>${o.notas?`<div class="order-admin-meta">📝 ${o.notas}</div>`:''}</div><span class="order-status ${statusClass}">${o.estado||'Sin estado'}</span></div><div class="order-items-list">${items||'<em>Sin detalles</em>'}</div>${discountEditHtml}<div class="summary-row"><span>Subtotal</span><strong>${money(o.subtotal)}</strong></div><div class="summary-row"><span>Descuento</span><strong>- ${money(o.descuento_aplicado||0)}</strong></div><div class="summary-row"><span>Costo de envío</span><strong>${money(o.costo_envio||0)}</strong></div><div class="summary-row total"><span>Total</span><strong>${money(o.total)}</strong></div><div class="order-admin-actions">${actions}</div>`;
-
-  const invoiceBtn=card.querySelector('.order-invoice-btn');
-  if(invoiceBtn) invoiceBtn.onclick=()=>invoiceOrder(o,invoiceBtn);
-  const editBtn=card.querySelector('.order-edit-btn');
-  if(editBtn) editBtn.onclick=()=>{ orderEditingId = editing ? null : o.id; drawOrders(); };
-  const cancelBtn=card.querySelector('.order-cancel-btn');
-  if(cancelBtn) cancelBtn.onclick=()=>cancelOrder(o);
-  const deleteBtn=card.querySelector('.order-delete-btn');
-  if(deleteBtn) deleteBtn.onclick=()=>deleteCancelledOrder(o,deleteBtn);
-  const saveDiscountBtn=card.querySelector('.order-save-discount-btn');
-  if(saveDiscountBtn) saveDiscountBtn.onclick=()=>saveOrderDiscount(o, document.getElementById(`discount-input-${o.id}`).value, saveDiscountBtn);
-  card.querySelectorAll('.order-item-remove').forEach(btn=>{ btn.onclick=()=>removeOrderItem(o, btn.dataset.detalleId, btn); });
-  return card;
-}
+let orderEditingId = null; // pedido_id actualmente en modo edición
 
 function drawOrders(){
-  const term=(ordersSearchEl.value||'').trim().toLowerCase();
-  const rows=adminOrders.filter(o=>(o.estado!=='Facturado' && o.estado!=='Cancelado') && orderMatchesSearch(o,term));
-  if(!rows.length){ordersListEl.innerHTML='<p class="orders-empty">No hay pedidos activos que coincidan.</p>';return;}
-  ordersListEl.innerHTML=''; rows.forEach(o=>ordersListEl.appendChild(buildOrderCard(o)));
-}
+  const term=(ordersSearchEl.value||'').trim().toLowerCase(); const rows=adminOrders.filter(o=>!term||String(o.id).includes(term)||(o.cliente_nombre||'').toLowerCase().includes(term)||(o.cliente_telefono||'').toLowerCase().includes(term));
+  if(!rows.length){ordersListEl.innerHTML='<p class="orders-empty">No hay pedidos que coincidan.</p>';return;}
+  ordersListEl.innerHTML='';
+  rows.forEach(o=>{
+    const card=document.createElement('div');
+    const fact=o.estado==='Facturado';
+    const cancel=o.estado==='Cancelado';
+    const editable=!fact && !cancel;
+    const editing = editable && orderEditingId===o.id;
+    card.className='order-admin-card'+(cancel?' order-cancelado':'');
 
-function drawOrderHistory(){
-  const term=(historySearchEl.value||'').trim().toLowerCase();
-  const selectedDate=historyDateEl.value;
-  const status=historyStatusEl.value;
-  const rows=adminOrders.filter(o=>{
-    if(o.estado!=='Facturado' && o.estado!=='Cancelado') return false;
-    if(status && o.estado!==status) return false;
-    if(selectedDate){
-      const d=new Date(o.fecha);
-      const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
-      if(iso!==selectedDate) return false;
-    }
-    return orderMatchesSearch(o,term);
+    const items=(o._details||[]).map(d=>`<div class="order-item-line"><span>${d.cantidad} × ${d.producto_nombre||('Producto #'+d.producto_id)}${d.variant_nombre?' ('+d.variant_nombre+')':''}</span><span style="display:flex;align-items:center;"><strong>${money(d.cantidad*d.precio_unitario)}</strong>${editing?`<button type="button" class="order-item-remove" data-detalle-id="${d.id}" title="Quitar este producto del pedido">🗑</button>`:''}</span></div>`).join('');
+
+    const entregaAdmin=o.tipo_entrega==='recoger'?'🏪 Recoger en tienda':'🚚 Enviar a domicilio';
+    const statusClass=fact?'facturado':(cancel?'cancelado':'');
+
+    const discountEditHtml = editing ? `
+      <div class="order-discount-edit">
+        <label for="discount-input-${o.id}">Descuento (L.)</label>
+        <input type="number" min="0" step="0.01" id="discount-input-${o.id}" value="${Number(o.descuento_aplicado||0)}">
+        <button type="button" class="order-save-discount-btn" data-pedido-id="${o.id}">Guardar descuento</button>
+      </div>` : '';
+
+    card.innerHTML=`<div class="order-admin-head"><div><div class="order-admin-client">${o.cliente_nombre}</div><div class="order-admin-id">Pedido #${o.id} · ${new Date(o.fecha).toLocaleString('es-HN')}</div><div class="order-admin-meta">📞 ${o.cliente_telefono}</div><div class="order-admin-meta">${entregaAdmin} · 📍 ${o.direccion}</div>${o.notas?`<div class="order-admin-meta">📝 ${o.notas}</div>`:''}</div><span class="order-status ${statusClass}">${o.estado}</span></div><div class="order-items-list">${items||'<em>Sin detalles</em>'}</div>${discountEditHtml}<div class="summary-row"><span>Subtotal</span><strong>${money(o.subtotal)}</strong></div><div class="summary-row"><span>Descuento</span><strong>- ${money(o.descuento_aplicado||0)}</strong></div><div class="summary-row"><span>Costo de envío</span><strong>${money(o.costo_envio||0)}</strong></div><div class="summary-row total"><span>Total</span><strong>${money(o.total)}</strong></div><div class="order-admin-actions">${editable?`<button type="button" class="order-cancel-btn">Cancelar pedido</button><button type="button" class="order-edit-btn">${editing?'Listo':'Editar pedido'}</button>`:''}<button type="button" class="order-invoice-btn" ${!editable?'disabled':''}>${fact?'✓ Facturado':(cancel?'Cancelado':'Facturar / Descontar Inventario')}</button></div>`;
+
+    const invoiceBtn=card.querySelector('.order-invoice-btn');
+    if(editable) invoiceBtn.onclick=()=>invoiceOrder(o,invoiceBtn);
+
+    const editBtn=card.querySelector('.order-edit-btn');
+    if(editBtn) editBtn.onclick=()=>{ orderEditingId = editing ? null : o.id; drawOrders(); };
+
+    const cancelBtn=card.querySelector('.order-cancel-btn');
+    if(cancelBtn) cancelBtn.onclick=()=>cancelOrder(o);
+
+    const saveDiscountBtn=card.querySelector('.order-save-discount-btn');
+    if(saveDiscountBtn) saveDiscountBtn.onclick=()=>saveOrderDiscount(o, document.getElementById(`discount-input-${o.id}`).value, saveDiscountBtn);
+
+    card.querySelectorAll('.order-item-remove').forEach(btn=>{
+      btn.onclick=()=>removeOrderItem(o, btn.dataset.detalleId, btn);
+    });
+
+    ordersListEl.appendChild(card);
   });
-  if(!rows.length){historyListEl.innerHTML='<p class="orders-empty">No hay pedidos en el historial que coincidan.</p>';return;}
-  historyListEl.innerHTML=''; rows.forEach(o=>historyListEl.appendChild(buildOrderCard(o,{history:true})));
-}
-
-function renderOrderHistory(){
-  historyListEl.innerHTML='<p class="orders-empty">Cargando historial...</p>';
-  loadAdminOrders().then(drawOrderHistory).catch(error=>{historyListEl.innerHTML=`<p class="orders-empty" style="color:var(--brick);">No se pudo cargar el historial: ${error.message}</p>`;});
 }
 
 async function saveOrderDiscount(order, value, btn){
@@ -3262,7 +3059,9 @@ async function saveOrderDiscount(order, value, btn){
   btn.disabled = true; btn.textContent = 'Guardando...';
   const {data,error} = await sb.rpc('admin_actualizar_descuento_pedido', {p_pedido_id: order.id, p_descuento: descuento});
   if(error){ alert('No se pudo actualizar el descuento: ' + error.message); btn.disabled=false; btn.textContent='Guardar descuento'; return; }
-  order.descuento_aplicado = data.descuento_aplicado; order.total = data.total; drawOrders();
+  order.descuento_aplicado = data.descuento_aplicado;
+  order.total = data.total;
+  drawOrders();
 }
 
 async function removeOrderItem(order, detalleId, btn){
@@ -3270,47 +3069,29 @@ async function removeOrderItem(order, detalleId, btn){
   btn.disabled = true;
   const {data,error} = await sb.rpc('admin_eliminar_item_pedido', {p_detalle_id: parseInt(detalleId)});
   if(error){ alert('No se pudo quitar el producto: ' + error.message); btn.disabled=false; return; }
-  order._details = (order._details||[]).filter(d => String(d.id) !== String(detalleId)); order.subtotal=data.subtotal; order.descuento_aplicado=data.descuento_aplicado; order.total=data.total; drawOrders();
+  order._details = (order._details||[]).filter(d => String(d.id) !== String(detalleId));
+  order.subtotal = data.subtotal;
+  order.descuento_aplicado = data.descuento_aplicado;
+  order.total = data.total;
+  drawOrders();
 }
 
 async function cancelOrder(order){
-  if(!confirm(`¿Cancelar el pedido #${order.id}? Pasará al Historial de pedidos y dejará de mostrarse aquí.`)) return;
+  if(!confirm(`¿Cancelar el pedido #${order.id}? Esta acción no se puede deshacer.`)) return;
   const {data,error} = await sb.rpc('admin_cancelar_pedido', {p_pedido_id: order.id});
   if(error){ alert('No se pudo cancelar el pedido: ' + error.message); return; }
-  order.estado = 'Cancelado'; if(orderEditingId === order.id) orderEditingId = null; drawOrders();
-  if(document.getElementById('admin-tab-history').classList.contains('active')) drawOrderHistory();
+  order.estado = 'Cancelado';
+  if(orderEditingId === order.id) orderEditingId = null;
+  drawOrders();
 }
-
-async function deleteCancelledOrder(order,btn){
-  if(order.estado!=='Cancelado') return;
-  if(!confirm(`¿Eliminar DEFINITIVAMENTE el pedido #${order.id}? Se borrarán sus detalles y el pedido de las tablas de Supabase. Esta acción no se puede deshacer.`)) return;
-  btn.disabled=true; btn.textContent='Eliminando...';
-  const detailDelete=await sb.from('detalle_pedidos').delete().eq('pedido_id',order.id);
-  if(detailDelete.error){alert('No se pudieron eliminar los detalles: '+detailDelete.error.message);btn.disabled=false;btn.textContent='Eliminar definitivamente';return;}
-  const orderDelete=await sb.from('pedidos').delete().eq('id',order.id);
-  if(orderDelete.error){alert('Los detalles fueron eliminados, pero no se pudo eliminar el pedido: '+orderDelete.error.message);btn.disabled=false;btn.textContent='Eliminar definitivamente';return;}
-  adminOrders=adminOrders.filter(o=>String(o.id)!==String(order.id));
-  drawOrderHistory();
-}
-
 async function invoiceOrder(order,btn){
-  if(!confirm(`¿Confirmas facturar el pedido #${order.id} y descontar su inventario? Pasará al Historial de pedidos.`))return;
+  if(!confirm(`¿Confirmas facturar el pedido #${order.id} y descontar su inventario? Esta acción no se puede deshacer.`))return;
   btn.disabled=true; btn.textContent='Procesando...';
   const {data,error}=await sb.rpc('facturar_pedido',{p_pedido_id:order.id});
   if(error){alert('No se pudo facturar: '+error.message);btn.disabled=false;btn.textContent='Facturar / Descontar Inventario';return;}
-  order.estado='Facturado';
-  alert(`Pedido #${order.id} facturado correctamente. Inventario descontado.`);
-  await loadProductVariants(); await loadProducts();
-  drawOrders();
-  if(document.getElementById('admin-tab-inventory').classList.contains('active'))renderInventoryList();
-  if(document.getElementById('admin-tab-history').classList.contains('active'))drawOrderHistory();
+  alert(`Pedido #${order.id} facturado correctamente. Inventario descontado.`); await loadProductVariants(); await loadProducts(); await renderOrdersList(); if(document.getElementById('admin-tab-inventory').classList.contains('active'))renderInventoryList();
 }
-
 ordersSearchEl.addEventListener('input',drawOrders);
-historySearchEl.addEventListener('input',drawOrderHistory);
-historyDateEl.addEventListener('change',drawOrderHistory);
-historyStatusEl.addEventListener('change',drawOrderHistory);
-historyClearEl.addEventListener('click',()=>{historySearchEl.value='';historyDateEl.value='';historyStatusEl.value='';drawOrderHistory();});
 
 </script>
 </body>
