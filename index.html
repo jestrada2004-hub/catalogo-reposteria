@@ -1217,6 +1217,16 @@
   .pv-add-row button{background:var(--butter);color:var(--espresso);border:none;border-radius:6px;padding:.5rem .8rem;font-family:'Inter',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;}
   .pv-empty{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#8a7960;font-style:italic;margin-bottom:.4rem;}
 
+
+  /* ---------- FOTO DE COLOR ---------- */
+  .pv-newphoto{flex-basis:100%;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;}
+  .pv-newphoto input[type="url"],.inv-add-color input[type="url"]{flex:1;min-width:150px;padding:.5rem .7rem;border:2px solid var(--parchment-dark);border-radius:6px;font-family:'Inter',sans-serif;font-size:.82rem;}
+  .pv-newphoto .photo-preview,.inv-add-color .photo-preview{width:48px;height:48px;}
+  .pv-thumb,.inv-edit-thumb{width:36px;height:36px;object-fit:cover;border-radius:6px;flex:none;border:1px solid var(--parchment-dark);background:var(--parchment-dark);}
+  .pv-color-row button.pv-gal{background:var(--butter);color:var(--espresso);}
+  .inv-photo-btn{flex:none;border:none;border-radius:6px;background:var(--butter);color:var(--espresso);padding:.35rem .5rem;cursor:pointer;font-size:.85rem;}
+  .inv-add-photo{flex-basis:100%;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;}
+
   /* ---------- FOTOS CON CÁMARA ---------- */
   .photo-actions{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.4rem;}
   .photo-btn{background:var(--butter);color:var(--espresso);border:none;border-radius:6px;padding:.5rem .8rem;font-family:'Inter',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;}
@@ -1466,7 +1476,12 @@
             <input type="text" id="pv-new-name" placeholder="Nombre del color (ej. Rojo)">
             <input type="color" id="pv-new-hex" value="#C5A059" title="Color">
             <input type="number" id="pv-new-qty" min="0" step="1" value="0" title="Cantidad">
-            <input type="url" id="pv-new-image" placeholder="URL de la foto de este color (opcional)">
+            <div class="pv-newphoto">
+              <img id="pv-new-preview" class="photo-preview" alt="">
+              <button type="button" id="pv-new-cam">📷 Tomar foto</button>
+              <button type="button" id="pv-new-gal">🖼️ Subir foto</button>
+              <input type="url" id="pv-new-image" placeholder="o pega el URL de la foto (opcional)">
+            </div>
             <button type="button" id="pv-add-btn">➕ Agregar color</button>
           </div>
 
@@ -2460,14 +2475,18 @@ function renderPendingVariants(){
   rows.forEach(v => {
     const row = document.createElement('div');
     row.className = 'pv-color-row';
+    const thumbSrc = v._blob ? v._preview : (v.image_url || '');
     row.innerHTML = `
+      <img class="pv-thumb" alt="" style="display:${thumbSrc ? 'block' : 'none'}">
       <input type="color" value="${v.color_hex || '#C5A059'}" title="Color">
       <input type="text" value="${v.color_name}" placeholder="Nombre del color">
       <input type="number" min="0" step="1" value="${v.stock || 0}" title="Cantidad">
-      <input type="url" value="${v.image_url || ''}" placeholder="URL de la foto de este color (opcional)">
+      <input type="url" value="${v.image_url || ''}" placeholder="${v._blob ? '📷 Foto lista: se sube al guardar' : 'URL de la foto de este color (opcional)'}">
       <button type="button" title="Quitar">🗑</button>
       <button type="button" class="pv-cam" title="Tomar foto de este color">📷</button>
+      <button type="button" class="pv-gal" title="Subir foto de la galería">🖼️</button>
     `;
+    if(thumbSrc) row.querySelector('.pv-thumb').src = thumbSrc;
     const [hexInput, nameInput, qtyInput, imageInput] = row.querySelectorAll('input');
     hexInput.addEventListener('input', () => v.color_hex = hexInput.value);
     nameInput.addEventListener('input', () => v.color_name = nameInput.value);
@@ -2475,21 +2494,17 @@ function renderPendingVariants(){
     imageInput.addEventListener('input', () => {
       v.image_url = imageInput.value.trim();
       delete v._blob; delete v._preview;
-      imageInput.placeholder = 'URL de la foto de este color (opcional)';
-      camBtn.textContent = '📷';
+      const th = row.querySelector('.pv-thumb');
+      if(v.image_url){ th.src = v.image_url; th.style.display = 'block'; } else { th.style.display = 'none'; }
     });
-    const camBtn = row.querySelector('.pv-cam');
-    if(v._blob){
-      imageInput.placeholder = '📷 Foto lista: se sube al guardar';
-      camBtn.textContent = '✅';
-    }
-    camBtn.addEventListener('click', () => pickPhoto({ capture: true }, blob => {
+    const setColorBlob = blob => {
       v._blob = blob;
       v._preview = URL.createObjectURL(blob);
-      imageInput.value = '';
-      imageInput.placeholder = '📷 Foto lista: se sube al guardar';
-      camBtn.textContent = '✅';
-    }));
+      v.image_url = '';
+      renderPendingVariants();
+    };
+    row.querySelector('.pv-cam').addEventListener('click', () => pickPhoto({ capture: true }, setColorBlob));
+    row.querySelector('.pv-gal').addEventListener('click', () => pickPhoto({}, setColorBlob));
     row.querySelector('button').addEventListener('click', () => {
       if(v.id){ v._deleted = true; } else { pendingVariants = pendingVariants.filter(x => x !== v); }
       renderPendingVariants();
@@ -2498,28 +2513,56 @@ function renderPendingVariants(){
   });
 }
 
+let newColorBlob = null;
+const pvNewPreviewEl = document.getElementById('pv-new-preview');
+const pvNewImageEl = document.getElementById('pv-new-image');
+function clearNewColorPhoto(){
+  newColorBlob = null;
+  pvNewPreviewEl.removeAttribute('src');
+  pvNewPreviewEl.style.display = 'none';
+}
+function setNewColorPhoto(blob){
+  newColorBlob = blob;
+  pvNewPreviewEl.src = URL.createObjectURL(blob);
+  pvNewPreviewEl.style.display = 'block';
+  pvNewImageEl.value = '';
+  pvNewImageEl.placeholder = '📷 Foto lista: se sube al guardar el producto';
+}
+pvNewImageEl.addEventListener('input', () => {
+  if(newColorBlob) clearNewColorPhoto();
+  pvNewImageEl.placeholder = 'o pega el URL de la foto (opcional)';
+});
+document.getElementById('pv-new-cam').addEventListener('click', () => pickPhoto({ capture: true }, setNewColorPhoto));
+document.getElementById('pv-new-gal').addEventListener('click', () => pickPhoto({}, setNewColorPhoto));
+
 document.getElementById('pv-add-btn').addEventListener('click', () => {
   const nameInput = document.getElementById('pv-new-name');
   const hexInput = document.getElementById('pv-new-hex');
   const qtyInput = document.getElementById('pv-new-qty');
-  const imageInput = document.getElementById('pv-new-image');
   const name = nameInput.value.trim();
   if(!name){ alert('Escribe el nombre del color.'); return; }
-  pendingVariants.push({
+  const variant = {
     _tempId: ++tempIdCounter,
     color_name: name,
     color_hex: hexInput.value,
     stock: Math.max(0, parseInt(qtyInput.value) || 0),
-    image_url: imageInput.value.trim()
-  });
+    image_url: pvNewImageEl.value.trim()
+  };
+  if(newColorBlob){ variant._blob = newColorBlob; variant._preview = pvNewPreviewEl.src; variant.image_url = ''; }
+  pendingVariants.push(variant);
   nameInput.value = '';
   qtyInput.value = 0;
-  imageInput.value = '';
+  pvNewImageEl.value = '';
+  pvNewImageEl.placeholder = 'o pega el URL de la foto (opcional)';
+  newColorBlob = null;
+  pvNewPreviewEl.removeAttribute('src');
+  pvNewPreviewEl.style.display = 'none';
   renderPendingVariants();
 });
 
 function resetProductForm(){
   productForm.reset();
+  clearNewColorPhoto();
   document.getElementById('product-id').value = '';
   document.getElementById('product-instock').checked = true;
   document.getElementById('product-stock').value = 1;
@@ -2824,7 +2867,12 @@ function drawInventoryList(){
         <input type="text" placeholder="Nombre del color (ej. Rojo)" class="inv-new-color-name">
         <input type="color" class="inv-new-color-hex" value="#C5A059" title="Color">
         <input type="number" min="0" step="1" value="0" class="inv-new-color-qty" title="Cantidad">
-        <input type="url" placeholder="URL de la foto de este color (opcional)" class="inv-new-color-image">
+        <div class="inv-add-photo">
+          <img class="photo-preview inv-new-color-preview" alt="">
+          <button type="button" class="inv-new-cam">📷 Tomar foto</button>
+          <button type="button" class="inv-new-gal">🖼️ Subir foto</button>
+          <input type="url" placeholder="o pega el URL de la foto (opcional)" class="inv-new-color-image">
+        </div>
         <button type="button" class="inv-add-color-btn">➕ Agregar color</button>
       </div>
     `;
@@ -2832,7 +2880,23 @@ function drawInventoryList(){
     const colorsContainer = wrap.querySelector('.inv-colors');
     drawColorRows(colorsContainer, p);
 
+    let newBlob = null;
+    const newPreview = wrap.querySelector('.inv-new-color-preview');
+    const newUrlInput = wrap.querySelector('.inv-new-color-image');
+    const clearNewPhoto = () => { newBlob = null; newPreview.removeAttribute('src'); newPreview.style.display = 'none'; };
+    const setNewPhoto = blob => {
+      newBlob = blob;
+      newPreview.src = URL.createObjectURL(blob);
+      newPreview.style.display = 'block';
+      newUrlInput.value = '';
+      newUrlInput.placeholder = '📷 Foto lista: se sube al agregar';
+    };
+    newUrlInput.addEventListener('input', () => { if(newBlob) clearNewPhoto(); newUrlInput.placeholder = 'o pega el URL de la foto (opcional)'; });
+    wrap.querySelector('.inv-new-cam').addEventListener('click', () => pickPhoto({ capture: true }, setNewPhoto));
+    wrap.querySelector('.inv-new-gal').addEventListener('click', () => pickPhoto({}, setNewPhoto));
+
     wrap.querySelector('.inv-add-color-btn').addEventListener('click', async () => {
+      const addBtn = wrap.querySelector('.inv-add-color-btn');
       const nameInput = wrap.querySelector('.inv-new-color-name');
       const hexInput = wrap.querySelector('.inv-new-color-hex');
       const qtyInput = wrap.querySelector('.inv-new-color-qty');
@@ -2844,10 +2908,24 @@ function drawInventoryList(){
       }
       const qty = Math.max(0, parseInt(qtyInput.value) || 0);
 
+      let imageUrl = imageInput.value.trim();
+      addBtn.disabled = true;
+      if(newBlob){
+        addBtn.textContent = 'Subiendo foto...';
+        try{ imageUrl = await uploadPhoto(p.id, newBlob, 'color'); }
+        catch(err){
+          console.error(err);
+          alert('No se pudo subir la foto: ' + (err.message || err));
+          addBtn.disabled = false; addBtn.textContent = '➕ Agregar color';
+          return;
+        }
+      }
+
       const { data, error } = await sb.from('product_variants')
-        .insert({ product_id: p.id, color_name: colorName, color_hex: hexInput.value, stock: qty, image_url: imageInput.value.trim() || null })
+        .insert({ product_id: p.id, color_name: colorName, color_hex: hexInput.value, stock: qty, image_url: imageUrl || null })
         .select();
 
+      addBtn.disabled = false; addBtn.textContent = '➕ Agregar color';
       if(error){
         alert('No se pudo agregar el color: ' + error.message);
         return;
@@ -2860,6 +2938,8 @@ function drawInventoryList(){
       nameInput.value = '';
       qtyInput.value = 0;
       imageInput.value = '';
+      imageInput.placeholder = 'o pega el URL de la foto (opcional)';
+      clearNewPhoto();
 
       drawColorRows(colorsContainer, p);
       updateProductHeadBadge(wrap, p.id);
@@ -2891,6 +2971,7 @@ function drawColorRows(container, p){
   container.innerHTML = '';
   rows.forEach(v => {
     let editing = false;
+    let editBlob = null;
 
     function buildRow(){
       const row = document.createElement('div');
@@ -2898,10 +2979,13 @@ function drawColorRows(container, p){
 
       if(editing){
         row.innerHTML = `
+          <img class="inv-edit-thumb" alt="" style="display:${v.image_url ? 'block' : 'none'};" src="${v.image_url || ''}">
           <input type="color" class="inv-color-picker" value="${v.color_hex || '#cccccc'}" title="Color">
           <input type="text" class="inv-color-name-input" value="${v.color_name}" placeholder="Nombre del color">
           <input type="number" min="0" step="1" class="inv-qty-input" value="${v.stock || 0}">
           <input type="url" class="inv-color-image-input" value="${v.image_url || ''}" placeholder="URL de la foto de este color">
+          <button type="button" class="inv-photo-btn inv-photo-cam" title="Tomar foto de este color">📷</button>
+          <button type="button" class="inv-photo-btn inv-photo-gal" title="Subir foto de la galería">🖼️</button>
           <button type="button" class="inv-icon-btn edit active" title="Cerrar edición">✖️</button>
           <button type="button" class="inv-icon-btn save" title="Guardar cambios">💾</button>
           <button type="button" class="inv-icon-btn delete" title="Eliminar color">🗑</button>
@@ -2924,9 +3008,27 @@ function drawColorRows(container, p){
       const nameInput = row.querySelector('.inv-color-name-input');
       const colorPicker = row.querySelector('.inv-color-picker');
       const imageInput = row.querySelector('.inv-color-image-input');
+      if(editing){
+        const thumb = row.querySelector('.inv-edit-thumb');
+        const setEditBlob = blob => {
+          editBlob = blob;
+          thumb.src = URL.createObjectURL(blob);
+          thumb.style.display = 'block';
+          imageInput.value = '';
+          imageInput.placeholder = '📷 Foto lista: se sube al guardar';
+        };
+        row.querySelector('.inv-photo-cam').addEventListener('click', () => pickPhoto({ capture: true }, setEditBlob));
+        row.querySelector('.inv-photo-gal').addEventListener('click', () => pickPhoto({}, setEditBlob));
+        imageInput.addEventListener('input', () => {
+          editBlob = null;
+          const u = imageInput.value.trim();
+          if(u){ thumb.src = u; thumb.style.display = 'block'; } else { thumb.style.display = 'none'; }
+        });
+      }
 
       editBtn.addEventListener('click', () => {
         editing = !editing;
+        editBlob = null;
         const newRow = buildRow();
         row.replaceWith(newRow);
       });
@@ -2943,6 +3045,15 @@ function drawColorRows(container, p){
         }
         qtyInput.value = newQty;
         saveBtn.disabled = true;
+        if(editing && editBlob){
+          try{ payload.image_url = await uploadPhoto(p.id, editBlob, 'color'); }
+          catch(err){
+            console.error(err);
+            alert('No se pudo subir la foto: ' + (err.message || err));
+            saveBtn.disabled = false;
+            return;
+          }
+        }
 
         const { error } = await sb.from('product_variants').update(payload).eq('id', v.id);
         saveBtn.disabled = false;
@@ -2958,6 +3069,7 @@ function drawColorRows(container, p){
           v.color_hex = payload.color_hex;
           v.image_url = payload.image_url;
           editing = false;
+          editBlob = null;
         }
         drawColorRows(container, p);
         updateProductHeadBadge(container.closest('.inv-product'), p.id);
@@ -3556,7 +3668,7 @@ document.getElementById('purchases-copy').addEventListener('click', async () => 
    BANNER PROMO: ENVÍO GRATIS (cuenta regresiva de 2 horas por visitante)
    - PROMO_ACTIVE=false lo apaga.  - Cambia PROMO_ID para lanzar una promo nueva a todos.
    ========================================================= */
-const PROMO_ACTIVE = true;
+const PROMO_ACTIVE = false; // cambia a true para volver a mostrar el banner de envío gratis
 const PROMO_ID = 'envio-gratis-v1';
 const PROMO_CODE = 'ENVIOGRATIS01';
 const PROMO_HOURS = 2;
