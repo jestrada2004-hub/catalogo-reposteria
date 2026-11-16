@@ -40,8 +40,14 @@
     padding: 1rem 1rem .7rem; position: sticky; top: 0; z-index: 30;
     box-shadow: 0 2px 10px rgba(0,0,0,.15);
   }
-  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: .7rem; }
-  .top-bar h1 { font-family: 'Fraunces', serif; font-size: 1.25rem; margin: 0; color: var(--butter); }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: .7rem; gap: .5rem; }
+  .top-bar h1 { font-family: 'Fraunces', serif; font-size: 1.2rem; margin: 0; color: var(--butter); }
+  .user-badge {
+    background: rgba(197, 160, 89, 0.2); color: var(--butter);
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    padding: .2rem .55rem; border-radius: 999px; font-size: .72rem;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+  }
   .header-actions { display: flex; gap: .4rem; align-items: center; }
   .icon-top-btn {
     background: rgba(255,255,255,.15); border: none; color: #fff;
@@ -153,8 +159,7 @@
   .sale-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: .92rem; }
   .badge-status { font-size: .65rem; padding: .15rem .45rem; border-radius: 999px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
   .badge-anulada { background: var(--brick); color: #fff; }
-  .badge-pendiente { background: var(--blue); color: #fff; }
-  .badge-cobrada { background: var(--green); color: #fff; }
+  .badge-user { background: var(--parchment-dark); color: var(--espresso); font-size: .65rem; padding: .12rem .4rem; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; }
 
   .sale-meta { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #7a6855; margin: .25rem 0 .5rem; }
   .sale-items { font-size: .8rem; color: #4a3527; border-top: 1px dashed #e0d5c5; padding-top: .45rem; }
@@ -179,7 +184,10 @@
 
 <header>
   <div class="top-bar">
-    <h1>🧾 Facturación POS</h1>
+    <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
+      <h1>🧾 POS</h1>
+      <span class="user-badge" id="active-user-badge">👤 ...</span>
+    </div>
     <div class="header-actions">
       <button class="icon-top-btn" id="btn-sync" title="Actualizar inventario">🔄 Sync</button>
       <button class="icon-top-btn" id="btn-logout">Salir</button>
@@ -249,7 +257,7 @@
 <div class="container view" id="view-quotes">
   <div class="card">
     <label>Cotizaciones guardadas</label>
-    <p style="font-size:.78rem;color:#7a6855;margin-top:.2rem;">Aquí aparecen las cuentas que guardaste para clientes que regresarán más tarde.</p>
+    <p style="font-size:.78rem;color:#7a6855;margin-top:.2rem;">Las cotizaciones y sus PDFs se eliminan automáticamente después de 30 días.</p>
   </div>
   <div id="quotes-list">Cargando cotizaciones...</div>
 </div>
@@ -330,13 +338,19 @@
   </div>
 </div>
 
-<!-- MODAL: LOGIN -->
+<!-- MODAL: LOGIN (USUARIO CORTO: jestrada / avindel) -->
 <div class="modal" id="modal-login">
   <div class="modal-content">
     <h3>Iniciar Sesión POS</h3>
     <form id="login-form">
-      <div style="margin-bottom:.7rem;"><label>Correo</label><input type="email" id="login-email" required></div>
-      <div style="margin-bottom:1rem;"><label>Contraseña</label><input type="password" id="login-pass" required></div>
+      <div style="margin-bottom:.7rem;">
+        <label>Usuario</label>
+        <input type="text" id="login-user" placeholder="Ej. jestrada o avindel" autocomplete="username" autocapitalize="none" required>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" autocomplete="current-password" required>
+      </div>
       <button type="submit" style="width:100%; padding:.8rem; background:var(--espresso); color:var(--butter); border:none; border-radius:8px; font-weight:700;">Entrar</button>
       <p id="login-err" style="color:var(--brick); font-size:.8rem; margin-top:.5rem;"></p>
     </form>
@@ -347,6 +361,8 @@
 const SUPABASE_URL = 'https://cceyeoextdoqhqacnban.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_mAlRUydh4f-tJIF--U-Hrg_YAo-8kD1';
 const BUSINESS_NAME = 'Utensilios de Repostería y Más';
+const AUTH_DOMAIN = '@pos.utensilios.local';
+const PDF_BUCKET = 'documentos_pos';
 const CACHE_KEY = 'pos_catalog_cache_v1';
 const PAGE_SIZE = 30;
 
@@ -357,27 +373,42 @@ let visibleLimit = PAGE_SIZE;
 let bill = [];
 let salesCache = [];
 let currentEditingSale = null;
+let currentUsername = 'usuario';
 
 const money = n => `L. ${Number(n || 0).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+function extractUsername(email) {
+  if (!email) return 'usuario';
+  return email.split('@')[0].toLowerCase();
+}
+
+function setLoggedUser(session) {
+  currentUsername = extractUsername(session?.user?.email);
+  document.getElementById('active-user-badge').textContent = `👤 ${currentUsername}`;
+}
 
 async function initAuth() {
   const { data } = await sb.auth.getSession();
   if (!data.session) {
     document.getElementById('modal-login').classList.add('open');
   } else {
+    setLoggedUser(data.session);
     loadInventoryFast();
   }
 }
 
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
+  const rawUser = document.getElementById('login-user').value.trim().toLowerCase();
   const password = document.getElementById('login-pass').value;
-  const { error } = await sb.auth.signInWithPassword({ email, password });
+  const email = rawUser.includes('@') ? rawUser : `${rawUser}${AUTH_DOMAIN}`;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
-    document.getElementById('login-err').textContent = 'Credenciales incorrectas.';
+    document.getElementById('login-err').textContent = 'Usuario o contraseña incorrectos.';
     return;
   }
+  setLoggedUser(data.session);
   document.getElementById('modal-login').classList.remove('open');
   loadInventoryFast();
 });
@@ -639,6 +670,7 @@ document.getElementById('btn-preview').addEventListener('click', () => {
     <div><strong>Cliente:</strong> ${cliente}</div>
     ${tel ? `<div><strong>Celular:</strong> ${tel}</div>` : ''}
     <div><strong>Método:</strong> ${metodo}</div>
+    <div><strong>Atendió:</strong> ${currentUsername}</div>
     <div class="ticket-line"></div>
     ${itemsHtml}
     <div class="ticket-line"></div>
@@ -660,7 +692,63 @@ function formatPhoneHN(raw) {
   return digits.length === 8 ? '504' + digits : digits;
 }
 
-// --- ENVIAR COTIZACIÓN (GUARDAR + PDF + WHATSAPP) ---
+// --- SUBIDA DE PDF A SUPABASE STORAGE PARA ENLACE DIRECTO ---
+async function uploadPdfToStorage(doc, folder, fileName) {
+  try {
+    const pdfBlob = doc.output('blob');
+    const storagePath = `${folder}/${fileName}`;
+    const { error } = await sb.storage.from(PDF_BUCKET).upload(storagePath, pdfBlob, {
+      contentType: 'application/pdf',
+      upsert: true
+    });
+    if (error) {
+      console.warn('No se pudo subir el PDF al Storage:', error.message);
+      return null;
+    }
+    const { data } = sb.storage.from(PDF_BUCKET).getPublicUrl(storagePath);
+    return data?.publicUrl || null;
+  } catch (err) {
+    console.warn('Error generando enlace PDF:', err);
+    return null;
+  }
+}
+
+// --- CREAR DOCUMENTO PDF COTIZACIÓN ---
+function buildCotizacionDoc(cotId, cliente, telefono, items, sub, desc, total, vendedor = currentUsername) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ format: [80, 195], unit: 'mm' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text(BUSINESS_NAME, 40, 10, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text(`COTIZACIÓN #${cotId}`, 40, 15, { align: 'center' });
+  doc.text(new Date().toLocaleString('es-HN'), 40, 19, { align: 'center' });
+  doc.text(`Cliente: ${cliente}`, 5, 25);
+  let startY = 29;
+  if (telefono) { doc.text(`Tel: ${telefono}`, 5, startY); startY += 4; }
+  doc.text(`Atendió: ${vendedor}`, 5, startY);
+
+  doc.autoTable({
+    startY: startY + 4,
+    margin: { left: 4, right: 4 },
+    styles: { fontSize: 7, cellPadding: 1 },
+    head: [['Cant', 'Producto', 'Total']],
+    body: items.map(i => [i.cantidad, i.descripcion, money(i.cantidad * i.precio_unitario)]),
+    theme: 'plain'
+  });
+
+  let y = doc.lastAutoTable.finalY + 5;
+  doc.text(`Subtotal: ${money(sub)}`, 75, y, { align: 'right' });
+  if (desc > 0) { y += 4; doc.text(`Descuento: -${money(desc)}`, 75, y, { align: 'right' }); }
+  y += 5;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text(`TOTAL: ${money(total)}`, 75, y, { align: 'right' });
+  return doc;
+}
+
+// --- ENVIAR COTIZACIÓN (GUARDAR + SUBIR PDF + WHATSAPP CON ENLACE) ---
 document.getElementById('btn-cotizacion').addEventListener('click', async () => {
   if (!bill.length) return;
   const cliente = document.getElementById('cliente-nombre').value.trim() || 'Consumidor Final';
@@ -676,7 +764,8 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
     p_cliente_telefono: telefono || null,
     p_descuento: desc,
     p_notas: null,
-    p_items: bill
+    p_items: bill,
+    p_usuario: currentUsername
   });
 
   if (error) {
@@ -685,18 +774,32 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
     return;
   }
 
-  // Generar PDF de Cotización
-  generarCotizacionPDF(data.id, cliente, telefono, [...bill], sub, desc, total);
+  const fileName = `Cotizacion-${data.id}-${cliente.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+  const doc = buildCotizacionDoc(data.id, cliente, telefono, [...bill], sub, desc, total, currentUsername);
+  doc.save(fileName);
 
-  // Abrir WhatsApp si hay teléfono
+  const pdfUrl = await uploadPdfToStorage(doc, 'cotizaciones', fileName);
+  if (pdfUrl && data.id) {
+    await sb.from('cotizaciones').update({ pdf_url: pdfUrl }).eq('id', data.id);
+  }
+
   const waPhone = formatPhoneHN(telefono);
   if (waPhone) {
-    const lineas = bill.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
-    const msg = `¡Hola ${cliente}! Adjunto tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total Estimado: ${money(total)}*`;
+    const lineas = bill.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('
+');
+    const linkTxt = pdfUrl ? `
+
+📄 *Descarga tu cotización en PDF aquí:*
+${pdfUrl}` : '';
+    const msg = `¡Hola ${cliente}! Te compartimos tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:
+
+${lineas}
+
+*Total Estimado: ${money(total)}*${linkTxt}`;
     window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
-  alert(`¡Cotización #${data.id} guardada y PDF descargado!`);
+  alert(`¡Cotización #${data.id} guardada!${pdfUrl ? ' Enlace PDF listo.' : ''}`);
   bill = [];
   document.getElementById('cliente-nombre').value = 'Consumidor Final';
   document.getElementById('cliente-telefono').value = '';
@@ -705,23 +808,22 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
   btn.disabled = false; btn.textContent = '💬 Cotizar';
 });
 
-function generarCotizacionPDF(cotId, cliente, telefono, items, sub, desc, total) {
+// --- CREAR DOCUMENTO PDF FACTURA ---
+function buildReciboDoc(ventaId, cliente, telefono, metodo, items, sub, desc, total, vendedor = currentUsername) {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ format: [80, 190], unit: 'mm' });
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
+  const doc = new jsPDF({ format: [80, 195], unit: 'mm' });
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
   doc.text(BUSINESS_NAME, 40, 10, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text(`COTIZACIÓN #${cotId}`, 40, 15, { align: 'center' });
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.text(`Factura #${ventaId}`, 40, 15, { align: 'center' });
   doc.text(new Date().toLocaleString('es-HN'), 40, 19, { align: 'center' });
   doc.text(`Cliente: ${cliente}`, 5, 25);
   let startY = 29;
   if (telefono) { doc.text(`Tel: ${telefono}`, 5, startY); startY += 4; }
+  doc.text(`Pago: ${metodo} · Atendió: ${vendedor}`, 5, startY);
 
   doc.autoTable({
-    startY: startY + 2,
-    margin: { left: 4, right: 4 },
+    startY: startY + 4, margin: { left: 4, right: 4 },
     styles: { fontSize: 7, cellPadding: 1 },
     head: [['Cant', 'Producto', 'Total']],
     body: items.map(i => [i.cantidad, i.descripcion, money(i.cantidad * i.precio_unitario)]),
@@ -731,14 +833,12 @@ function generarCotizacionPDF(cotId, cliente, telefono, items, sub, desc, total)
   let y = doc.lastAutoTable.finalY + 5;
   doc.text(`Subtotal: ${money(sub)}`, 75, y, { align: 'right' });
   if (desc > 0) { y += 4; doc.text(`Descuento: -${money(desc)}`, 75, y, { align: 'right' }); }
-  y += 5;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
+  y += 5; doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   doc.text(`TOTAL: ${money(total)}`, 75, y, { align: 'right' });
-  doc.save(`Cotizacion-${cotId}-${cliente.replace(/\s+/g, '_')}.pdf`);
+  return doc;
 }
 
-// --- FACTURAR ---
+// --- FACTURAR (REGISTRAR + SUBIR PDF + WHATSAPP CON ENLACE) ---
 document.getElementById('btn-facturar').addEventListener('click', async () => {
   if (!bill.length) return;
   const btn = document.getElementById('btn-facturar');
@@ -750,8 +850,13 @@ document.getElementById('btn-facturar').addEventListener('click', async () => {
   const { sub, desc, total } = updateTotals();
 
   const { data, error } = await sb.rpc('registrar_venta_pos', {
-    p_cliente_nombre: cliente, p_cliente_telefono: telefono || null,
-    p_metodo_pago: metodo, p_descuento: desc, p_notas: null, p_items: bill
+    p_cliente_nombre: cliente,
+    p_cliente_telefono: telefono || null,
+    p_metodo_pago: metodo,
+    p_descuento: desc,
+    p_notas: null,
+    p_items: bill,
+    p_usuario: currentUsername
   });
 
   if (error) {
@@ -769,12 +874,29 @@ document.getElementById('btn-facturar').addEventListener('click', async () => {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(catalogItems)); } catch (e) {}
 
   const itemsCopy = [...bill];
-  generarReciboPDF(data.id, cliente, telefono, metodo, itemsCopy, sub, desc, total);
+  const fileName = `Factura-${data.id}-${cliente.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+  const doc = buildReciboDoc(data.id, cliente, telefono, metodo, itemsCopy, sub, desc, total, currentUsername);
+  doc.save(fileName);
+
+  const pdfUrl = await uploadPdfToStorage(doc, 'facturas', fileName);
+  if (pdfUrl && data.id) {
+    await sb.from('ventas').update({ pdf_url: pdfUrl }).eq('id', data.id);
+  }
 
   const waPhone = formatPhoneHN(telefono);
   if (waPhone) {
-    const lineas = itemsCopy.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
-    const msg = `¡Hola ${cliente}! Gracias por tu compra en *${BUSINESS_NAME}*.\n\n*Factura #${data.id}*\n${lineas}\n\n*Total pagado: ${money(total)}*`;
+    const lineas = itemsCopy.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('
+');
+    const linkTxt = pdfUrl ? `
+
+📄 *Descarga tu factura en PDF aquí:*
+${pdfUrl}` : '';
+    const msg = `¡Hola ${cliente}! Gracias por tu compra en *${BUSINESS_NAME}*.
+
+*Factura #${data.id}*
+${lineas}
+
+*Total pagado: ${money(total)}*${linkTxt}`;
     window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
@@ -784,44 +906,19 @@ document.getElementById('btn-facturar').addEventListener('click', async () => {
   document.getElementById('input-descuento').value = '0';
   renderBill(); renderProductList();
   btn.textContent = '✅ Facturar';
-  alert(`¡Factura #${data.id} emitida! Inventario actualizado y PDF descargado.`);
+  alert(`¡Factura #${data.id} emitida! Inventario actualizado.${pdfUrl ? ' PDF guardado en la nube.' : ''}`);
 });
-
-function generarReciboPDF(ventaId, cliente, telefono, metodo, items, sub, desc, total) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ format: [80, 190], unit: 'mm' });
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-  doc.text(BUSINESS_NAME, 40, 10, { align: 'center' });
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.text(`Factura #${ventaId}`, 40, 15, { align: 'center' });
-  doc.text(new Date().toLocaleString('es-HN'), 40, 19, { align: 'center' });
-  doc.text(`Cliente: ${cliente}`, 5, 25);
-  let startY = 29;
-  if (telefono) { doc.text(`Tel: ${telefono}`, 5, startY); startY += 4; }
-  doc.text(`Pago: ${metodo}`, 5, startY);
-
-  doc.autoTable({
-    startY: startY + 4, margin: { left: 4, right: 4 },
-    styles: { fontSize: 7, cellPadding: 1 },
-    head: [['Cant', 'Producto', 'Total']],
-    body: items.map(i => [i.cantidad, i.descripcion, money(i.cantidad * i.precio_unitario)]),
-    theme: 'plain'
-  });
-
-  let y = doc.lastAutoTable.finalY + 5;
-  doc.text(`Subtotal: ${money(sub)}`, 75, y, { align: 'right' });
-  if (desc > 0) { y += 4; doc.text(`Descuento: -${money(desc)}`, 75, y, { align: 'right' }); }
-  y += 5; doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-  doc.text(`TOTAL: ${money(total)}`, 75, y, { align: 'right' });
-  doc.save(`Factura-${ventaId}-${cliente.replace(/\s+/g, '_')}.pdf`);
-}
 
 // --- PESTAÑA: COTIZACIONES GUARDADAS ---
 async function loadQuotes() {
   const listEl = document.getElementById('quotes-list');
   listEl.innerHTML = 'Cargando cotizaciones...';
 
-  const { data, error } = await sb.from('cotizaciones').select('*, detalle_cotizaciones(*)').order('fecha', { ascending: false }).limit(30);
+  const { data, error } = await sb.from('cotizaciones')
+    .select('*, detalle_cotizaciones(*)')
+    .order('fecha', { ascending: false })
+    .limit(30);
+
   if (error) { listEl.innerHTML = `<p style="color:var(--brick);">Error: ${error.message}</p>`; return; }
 
   const quotes = data || [];
@@ -834,7 +931,7 @@ async function loadQuotes() {
     card.className = 'sale-card';
     card.innerHTML = `
       <div class="sale-head">
-        <span>Cotización #${q.id} · ${q.cliente_nombre}</span>
+        <span>Cotización #${q.id} · ${q.cliente_nombre} ${q.creado_por ? `<span class="badge-user">👤 ${q.creado_por}</span>` : ''}</span>
         <span style="color:var(--blue);">${money(q.total)}</span>
       </div>
       <div class="sale-meta">${new Date(q.fecha).toLocaleString('es-HN')} ${q.cliente_telefono ? '· 📱 ' + q.cliente_telefono : ''}</div>
@@ -846,14 +943,37 @@ async function loadQuotes() {
       </div>
     `;
 
-    card.querySelector('.btn-pdf').onclick = () => generarCotizacionPDF(q.id, q.cliente_nombre, q.cliente_telefono, q.detalle_cotizaciones || [], q.subtotal, q.descuento, q.total);
+    card.querySelector('.btn-pdf').onclick = () => {
+      if (q.pdf_url) {
+        window.open(q.pdf_url, '_blank');
+      } else {
+        const doc = buildCotizacionDoc(q.id, q.cliente_nombre, q.cliente_telefono, q.detalle_cotizaciones || [], q.subtotal, q.descuento, q.total, q.creado_por || currentUsername);
+        doc.save(`Cotizacion-${q.id}-${q.cliente_nombre.replace(/\s+/g, '_')}.pdf`);
+      }
+    };
     
     const waBtn = card.querySelector('.btn-wa');
     if (waBtn) {
-      waBtn.onclick = () => {
+      waBtn.onclick = async () => {
+        let linkUrl = q.pdf_url;
+        if (!linkUrl) {
+          const doc = buildCotizacionDoc(q.id, q.cliente_nombre, q.cliente_telefono, q.detalle_cotizaciones || [], q.subtotal, q.descuento, q.total, q.creado_por || currentUsername);
+          const fName = `Cotizacion-${q.id}-${q.cliente_nombre.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+          linkUrl = await uploadPdfToStorage(doc, 'cotizaciones', fName);
+          if (linkUrl) await sb.from('cotizaciones').update({ pdf_url: linkUrl }).eq('id', q.id);
+        }
         const waPhone = formatPhoneHN(q.cliente_telefono);
-        const lineas = (q.detalle_cotizaciones || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('\n');
-        const msg = `Hola ${q.cliente_nombre}, te recordamos tu cotización en *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total: ${money(q.total)}*`;
+        const lineas = (q.detalle_cotizaciones || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('
+');
+        const linkTxt = linkUrl ? `
+
+📄 *Ver PDF:*
+${linkUrl}` : '';
+        const msg = `Hola ${q.cliente_nombre}, te recordamos tu cotización en *${BUSINESS_NAME}*:
+
+${lineas}
+
+*Total: ${money(q.total)}*${linkTxt}`;
         window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
       };
     }
@@ -884,7 +1004,7 @@ async function loadSalesReport() {
 
   const fechaFiltro = document.getElementById('filtro-fecha').value;
   let query = sb.from('ventas')
-    .select('id, fecha, cliente_nombre, cliente_telefono, metodo_pago, subtotal, descuento, total, estado, detalle_ventas(id, descripcion, cantidad, precio_original, precio_unitario, subtotal)')
+    .select('id, fecha, cliente_nombre, cliente_telefono, metodo_pago, subtotal, descuento, total, estado, creado_por, pdf_url, detalle_ventas(id, descripcion, cantidad, precio_original, precio_unitario, subtotal)')
     .order('fecha', { ascending: false });
 
   if (fechaFiltro) {
@@ -912,7 +1032,7 @@ async function loadSalesReport() {
     card.className = 'sale-card' + (isAnulada ? ' anulada' : '');
     card.innerHTML = `
       <div class="sale-head">
-        <span>#${v.id} · ${v.cliente_nombre} ${isAnulada ? '<span class="badge-status badge-anulada">Anulada</span>' : ''}</span>
+        <span>#${v.id} · ${v.cliente_nombre} ${v.creado_por ? `<span class="badge-user">👤 ${v.creado_por}</span>` : ''} ${isAnulada ? '<span class="badge-status badge-anulada">Anulada</span>' : ''}</span>
         <span style="color:${isAnulada ? '#9C4A2E' : '#2c7a4b'}; text-decoration:${isAnulada ? 'line-through' : 'none'};">${money(v.total)}</span>
       </div>
       <div class="sale-meta">${new Date(v.fecha).toLocaleString('es-HN')} · ${v.metodo_pago} ${v.cliente_telefono ? '· 📱 ' + v.cliente_telefono : ''}</div>
@@ -925,14 +1045,37 @@ async function loadSalesReport() {
       </div>
     `;
 
-    card.querySelector('.btn-pdf').onclick = () => generarReciboPDF(v.id, v.cliente_nombre, v.cliente_telefono, v.metodo_pago, v.detalle_ventas || [], v.subtotal, v.descuento, v.total);
+    card.querySelector('.btn-pdf').onclick = () => {
+      if (v.pdf_url) {
+        window.open(v.pdf_url, '_blank');
+      } else {
+        const doc = buildReciboDoc(v.id, v.cliente_nombre, v.cliente_telefono, v.metodo_pago, v.detalle_ventas || [], v.subtotal, v.descuento, v.total, v.creado_por || currentUsername);
+        doc.save(`Factura-${v.id}-${v.cliente_nombre.replace(/\s+/g, '_')}.pdf`);
+      }
+    };
     
     const waBtn = card.querySelector('.btn-wa');
     if (waBtn) {
-      waBtn.onclick = () => {
+      waBtn.onclick = async () => {
+        let linkUrl = v.pdf_url;
+        if (!linkUrl) {
+          const doc = buildReciboDoc(v.id, v.cliente_nombre, v.cliente_telefono, v.metodo_pago, v.detalle_ventas || [], v.subtotal, v.descuento, v.total, v.creado_por || currentUsername);
+          const fName = `Factura-${v.id}-${v.cliente_nombre.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+          linkUrl = await uploadPdfToStorage(doc, 'facturas', fName);
+          if (linkUrl) await sb.from('ventas').update({ pdf_url: linkUrl }).eq('id', v.id);
+        }
         const waPhone = formatPhoneHN(v.cliente_telefono);
-        const lineas = (v.detalle_ventas || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('\n');
-        const msg = `Hola ${v.cliente_nombre}, te compartimos el detalle de tu *Factura #${v.id}*:\n\n${lineas}\n\n*Total: ${money(v.total)}*`;
+        const lineas = (v.detalle_ventas || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('
+');
+        const linkTxt = linkUrl ? `
+
+📄 *Descarga tu factura en PDF aquí:*
+${linkUrl}` : '';
+        const msg = `Hola ${v.cliente_nombre}, te compartimos el detalle de tu *Factura #${v.id}*:
+
+${lineas}
+
+*Total: ${money(v.total)}*${linkTxt}`;
         window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
       };
     }
@@ -948,7 +1091,8 @@ async function loadSalesReport() {
 }
 
 async function voidSale(venta) {
-  if (!confirm(`¿ANULAR Factura #${venta.id}?\nEl inventario se devolverá.`)) return;
+  if (!confirm(`¿ANULAR Factura #${venta.id}?
+El inventario se devolverá.`)) return;
   const { error } = await sb.rpc('anular_venta_pos', { p_venta_id: venta.id });
   if (error) return alert('Error: ' + error.message);
   alert('Factura anulada e inventario restaurado.');
