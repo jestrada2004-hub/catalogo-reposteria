@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>POS · Utensilios de Repostería</title>
 
-<!-- Configuración para instalar como App (Ícono en celular) -->
+<!-- Configuración PWA para instalar como ícono en celular -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Facturar POS">
@@ -26,6 +26,7 @@
     --butter: #C5A059;
     --brick: #9C4A2E;
     --green: #2c7a4b;
+    --wa: #25D366;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
@@ -36,7 +37,6 @@
     padding-bottom: 85px;
   }
 
-  /* Header & Tabs */
   header {
     background: var(--espresso);
     color: var(--parchment);
@@ -67,7 +67,6 @@
   .view { display: none; }
   .view.active { display: block; }
 
-  /* Inputs & Cards */
   .card {
     background: #fff;
     border: 1px solid var(--parchment-dark);
@@ -79,108 +78,157 @@
   label {
     display: block;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: .7rem;
+    font-size: .68rem;
     text-transform: uppercase;
     color: var(--brick);
     margin-bottom: .3rem;
   }
   input, select {
     width: 100%;
-    padding: .7rem .8rem;
+    padding: .65rem .75rem;
     border: 2px solid var(--parchment-dark);
     border-radius: 8px;
-    font-size: .95rem;
+    font-size: .92rem;
     font-family: 'Inter', sans-serif;
     background: #fff;
   }
   input:focus, select:focus { outline: none; border-color: var(--butter); }
 
-  /* Buscador y Lista de Productos */
+  /* Buscador */
   .search-actions { display: flex; gap: .5rem; margin-bottom: .7rem; }
   .btn-manual {
     background: var(--espresso);
     color: var(--butter);
     border: none;
     border-radius: 8px;
-    padding: 0 .9rem;
+    padding: 0 .85rem;
     font-weight: 600;
     font-size: .8rem;
     white-space: nowrap;
     cursor: pointer;
   }
-  .prod-list { max-height: 270px; overflow-y: auto; display: flex; flex-direction: column; gap: .45rem; }
+  .prod-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: .45rem; }
   .prod-item {
     display: flex;
     align-items: center;
     gap: .7rem;
-    padding: .55rem;
+    padding: .5rem;
     border: 1px solid var(--parchment-dark);
     border-radius: 8px;
     background: var(--parchment);
     cursor: pointer;
   }
   .prod-item:active { transform: scale(.99); background: #efe6d8; }
-  .prod-item img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: #ddd; flex: none; }
+  .prod-item img { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; background: #ddd; flex: none; }
   .prod-info { flex: 1; min-width: 0; }
-  .prod-name { font-weight: 600; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prod-name { font-weight: 600; font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .prod-meta { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #7a6855; }
   .prod-price { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--espresso); font-size: .9rem; }
 
-  /* Carrito / Cuenta Actual */
+  /* Detalle de factura con edición de precio/descuento por ítem */
   .bill-item {
+    padding: .65rem 0;
+    border-bottom: 1px dashed #d8cbb8;
+  }
+  .bill-item:last-child { border-bottom: none; }
+  .bill-top { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }
+  .bill-title { font-weight: 600; font-size: .88rem; }
+  .bill-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: .5rem;
-    padding: .6rem 0;
-    border-bottom: 1px dashed #d8cbb8;
+    margin-top: .45rem;
+    flex-wrap: wrap;
   }
-  .bill-item:last-child { border-bottom: none; }
-  .bill-desc { flex: 1; min-width: 0; }
-  .bill-title { font-weight: 600; font-size: .88rem; }
-  .bill-sub { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: #7a6855; }
+  .price-edit-box { display: flex; align-items: center; gap: .35rem; font-family: 'IBM Plex Mono', monospace; font-size: .75rem; }
+  .price-edit-box input { width: 82px; padding: .3rem .45rem; font-size: .82rem; font-family: 'IBM Plex Mono', monospace; text-align: right; }
+  .disc-badge { background: #dff0e4; color: var(--green); font-size: .68rem; padding: .15rem .4rem; border-radius: 4px; font-weight: 600; }
   .qty-ctrl { display: flex; align-items: center; gap: .35rem; }
   .qty-btn {
-    width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--espresso);
-    background: #fff; font-weight: 700; font-size: 1rem; cursor: pointer;
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--espresso);
+    background: #fff; font-weight: 700; font-size: .95rem; cursor: pointer;
   }
-  .qty-val { font-family: 'IBM Plex Mono', monospace; min-width: 22px; text-align: center; font-weight: 600; }
+  .qty-val { font-family: 'IBM Plex Mono', monospace; min-width: 20px; text-align: center; font-weight: 600; font-size: .88rem; }
 
-  /* Totales y Botón Cobrar */
-  .totals-row { display: flex; justify-content: space-between; margin: .35rem 0; font-family: 'IBM Plex Mono', monospace; font-size: .88rem; }
+  /* Totales y Botones de acción */
+  .totals-row { display: flex; justify-content: space-between; margin: .35rem 0; font-family: 'IBM Plex Mono', monospace; font-size: .86rem; }
   .totals-row.grand { font-size: 1.15rem; font-weight: 700; color: var(--espresso); border-top: 2px solid var(--espresso); padding-top: .5rem; margin-top: .5rem; }
+  .action-buttons { display: grid; grid-template-columns: 1fr 2fr; gap: .6rem; margin-top: .9rem; }
+  .btn-preview {
+    padding: .9rem .6rem;
+    background: var(--butter);
+    color: var(--espresso);
+    border: none;
+    border-radius: 10px;
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
   .btn-cobrar {
-    width: 100%;
-    padding: .95rem;
+    padding: .9rem;
     background: var(--green);
     color: #fff;
     border: none;
     border-radius: 10px;
-    font-size: 1.05rem;
+    font-size: .95rem;
     font-weight: 700;
-    margin-top: .8rem;
     cursor: pointer;
   }
-  .btn-cobrar:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-cobrar:disabled, .btn-preview:disabled { opacity: .45; cursor: not-allowed; }
 
-  /* Modal Producto Manual & Login */
+  /* Modales */
   .modal {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65);
     z-index: 100; align-items: center; justify-content: center; padding: 1rem;
   }
   .modal.open { display: flex; }
-  .modal-content { background: var(--parchment); width: 100%; max-width: 400px; border-radius: 12px; padding: 1.2rem; }
+  .modal-content {
+    background: var(--parchment); width: 100%; max-width: 440px; max-height: 90vh;
+    overflow-y: auto; border-radius: 12px; padding: 1.2rem;
+  }
   .modal-content h3 { margin-top: 0; font-family: 'Fraunces', serif; }
 
-  /* Reportes */
+  /* Ticket Vista Previa */
+  .ticket-paper {
+    background: #fff;
+    border: 1px dashed #999;
+    padding: 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .78rem;
+    color: #222;
+    border-radius: 6px;
+  }
+  .ticket-center { text-align: center; }
+  .ticket-line { border-top: 1px dashed #bbb; margin: .6rem 0; }
+  .ticket-row { display: flex; justify-content: space-between; margin: .25rem 0; gap: .5rem; }
+
+  /* Reportes & Edición de facturas */
   .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-bottom: 1rem; }
   .kpi { background: #fff; border: 1px solid var(--parchment-dark); border-radius: 10px; padding: .8rem; }
-  .kpi .num { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--espresso); }
+  .kpi .num { font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 700; color: var(--espresso); }
   .kpi .lbl { font-family: 'IBM Plex Mono', monospace; font-size: .68rem; color: var(--brick); text-transform: uppercase; }
-  .sale-card { background: #fff; border: 1px solid var(--parchment-dark); border-radius: 10px; padding: .8rem; margin-bottom: .6rem; }
-  .sale-head { display: flex; justify-content: space-between; font-weight: 700; font-size: .9rem; }
-  .sale-meta { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #7a6855; margin: .2rem 0 .4rem; }
-  .sale-items { font-size: .8rem; color: #4a3527; border-top: 1px dashed #e0d5c5; padding-top: .4rem; }
+  .sale-card { background: #fff; border: 1px solid var(--parchment-dark); border-radius: 10px; padding: .85rem; margin-bottom: .7rem; }
+  .sale-card.anulada { opacity: .65; background: #faf3f2; border-color: #e4b9b4; }
+  .sale-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: .92rem; }
+  .badge-anulada { background: var(--brick); color: #fff; font-size: .65rem; padding: .15rem .45rem; border-radius: 999px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
+  .sale-meta { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #7a6855; margin: .25rem 0 .5rem; }
+  .sale-items { font-size: .8rem; color: #4a3527; border-top: 1px dashed #e0d5c5; padding-top: .45rem; }
+  .sale-actions { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .65rem; padding-top: .55rem; border-top: 1px solid #f0e8dc; }
+  .btn-sm {
+    border: none; border-radius: 6px; padding: .4rem .65rem; font-size: .74rem;
+    font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: .25rem;
+  }
+  .btn-edit { background: var(--butter); color: var(--espresso); }
+  .btn-void { background: var(--brick); color: #fff; }
+  .btn-pdf { background: var(--espresso); color: var(--parchment); }
+  .btn-wa { background: var(--wa); color: #fff; }
+
+  .edit-det-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .45rem; background: #fff; border: 1px solid var(--parchment-dark);
+    border-radius: 6px; margin-bottom: .4rem; font-size: .82rem;
+  }
 </style>
 </head>
 <body>
@@ -196,24 +244,28 @@
   </div>
 </header>
 
-<!-- VISTA 1: PUNTO DE VENTA / FACTURACIÓN -->
+<!-- VISTA 1: PUNTO DE VENTA -->
 <div class="container view active" id="view-pos">
   
-  <!-- Cliente -->
+  <!-- Datos del Cliente -->
   <div class="card">
-    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:.6rem;">
+    <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:.6rem; margin-bottom:.6rem;">
       <div>
         <label for="cliente-nombre">Cliente</label>
         <input type="text" id="cliente-nombre" value="Consumidor Final" onfocus="if(this.value==='Consumidor Final')this.select()">
       </div>
       <div>
-        <label for="metodo-pago">Pago</label>
-        <select id="metodo-pago">
-          <option value="Efectivo">Efectivo</option>
-          <option value="Transferencia">Transferencia</option>
-          <option value="Tarjeta">Tarjeta</option>
-        </select>
+        <label for="cliente-telefono">Celular (WhatsApp)</label>
+        <input type="tel" id="cliente-telefono" placeholder="Ej. 99887766">
       </div>
+    </div>
+    <div>
+      <label for="metodo-pago">Método de Pago</label>
+      <select id="metodo-pago">
+        <option value="Efectivo">Efectivo</option>
+        <option value="Transferencia">Transferencia</option>
+        <option value="Tarjeta">Tarjeta</option>
+      </select>
     </div>
   </div>
 
@@ -221,7 +273,7 @@
   <div class="card">
     <label>Buscar producto en inventario</label>
     <div class="search-actions">
-      <input type="search" id="search-input" placeholder="Escribe nombre o categoría...">
+      <input type="search" id="search-input" placeholder="Buscar por nombre...">
       <button type="button" class="btn-manual" id="btn-open-manual">+ No en sistema</button>
     </div>
     <div class="prod-list" id="prod-list">Cargando productos...</div>
@@ -230,18 +282,21 @@
   <!-- Cuenta / Factura Actual -->
   <div class="card">
     <label>Detalle de la factura (<span id="bill-count">0</span> artículos)</label>
-    <div id="bill-list"><p style="font-size:.85rem;color:#8a7960;text-align:center;">Toca un producto arriba para agregarlo a la cuenta.</p></div>
+    <div id="bill-list"><p style="font-size:.85rem;color:#8a7960;text-align:center;">Toca un producto arriba para agregarlo.</p></div>
 
-    <div style="margin-top:.8rem;">
+    <div style="margin-top:.8rem; border-top: 1px solid var(--parchment-dark); padding-top:.6rem;">
       <div class="totals-row"><span>Subtotal</span><span id="lbl-subtotal">L. 0.00</span></div>
       <div class="totals-row" style="align-items:center;">
-        <span>Descuento (L.)</span>
-        <input type="number" id="input-descuento" value="0" min="0" step="1" style="width:95px;padding:.3rem .5rem;text-align:right;">
+        <span>Descuento adicional al total (L.)</span>
+        <input type="number" id="input-descuento" value="0" min="0" step="1" style="width:95px;padding:.35rem .5rem;text-align:right;font-family:'IBM Plex Mono',monospace;">
       </div>
       <div class="totals-row grand"><span>TOTAL A COBRAR</span><span id="lbl-total">L. 0.00</span></div>
     </div>
 
-    <button class="btn-cobrar" id="btn-facturar" disabled>✅ Facturar y Descontar Inventario</button>
+    <div class="action-buttons">
+      <button type="button" class="btn-preview" id="btn-preview" disabled>👁️ Vista Previa</button>
+      <button type="button" class="btn-cobrar" id="btn-facturar" disabled>✅ Facturar</button>
+    </div>
   </div>
 </div>
 
@@ -252,15 +307,27 @@
       <label for="filtro-fecha">Filtrar por fecha</label>
       <input type="date" id="filtro-fecha">
     </div>
-    <button type="button" id="btn-ver-todas" style="padding:.7rem .9rem; border-radius:8px; border:none; background:var(--parchment-dark); font-weight:600; cursor:pointer;">Ver todas</button>
+    <button type="button" id="btn-ver-todas" style="padding:.68rem .9rem; border-radius:8px; border:none; background:var(--parchment-dark); font-weight:600; cursor:pointer;">Ver todas</button>
   </div>
 
   <div class="kpi-grid">
-    <div class="kpi"><div class="num" id="kpi-total">L. 0.00</div><div class="lbl">Total Vendido</div></div>
-    <div class="kpi"><div class="num" id="kpi-count">0</div><div class="lbl">Facturas Emitidas</div></div>
+    <div class="kpi"><div class="num" id="kpi-total">L. 0.00</div><div class="lbl">Vendido (Activas)</div></div>
+    <div class="kpi"><div class="num" id="kpi-count">0</div><div class="lbl">Facturas Activas</div></div>
   </div>
 
   <div id="sales-report-list">Cargando reporte...</div>
+</div>
+
+<!-- MODAL: VISTA PREVIA DE FACTURA -->
+<div class="modal" id="modal-preview">
+  <div class="modal-content">
+    <h3>Vista Previa de Factura</h3>
+    <div class="ticket-paper" id="preview-ticket-body"></div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.5rem; margin-top:1rem;">
+      <button type="button" id="btn-close-preview" style="padding:.75rem; background:var(--parchment-dark); border:none; border-radius:8px; font-weight:600;">Seguir editando</button>
+      <button type="button" id="btn-confirm-from-preview" style="padding:.75rem; background:var(--green); color:#fff; border:none; border-radius:8px; font-weight:700;">✅ Confirmar y Facturar</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL: PRODUCTO NO EN SISTEMA -->
@@ -269,396 +336,3 @@
     <h3>Producto no en sistema</h3>
     <div style="margin-bottom:.7rem;">
       <label>Descripción del producto</label>
-      <input type="text" id="manual-desc" placeholder="Ej. Caja especial o envío">
-    </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:1rem;">
-      <div>
-        <label>Precio Unitario (L.)</label>
-        <input type="number" id="manual-price" step="0.01" min="0" placeholder="0.00">
-      </div>
-      <div>
-        <label>Cantidad</label>
-        <input type="number" id="manual-qty" value="1" min="1" step="1">
-      </div>
-    </div>
-    <div style="display:flex; gap:.5rem;">
-      <button type="button" id="btn-save-manual" style="flex:1; padding:.75rem; background:var(--espresso); color:var(--butter); border:none; border-radius:8px; font-weight:700;">Agregar a factura</button>
-      <button type="button" id="btn-close-manual" style="padding:.75rem 1rem; background:var(--parchment-dark); border:none; border-radius:8px;">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: LOGIN ADMIN -->
-<div class="modal" id="modal-login">
-  <div class="modal-content">
-    <h3>Iniciar Sesión POS</h3>
-    <form id="login-form">
-      <div style="margin-bottom:.7rem;">
-        <label>Correo</label>
-        <input type="email" id="login-email" required>
-      </div>
-      <div style="margin-bottom:1rem;">
-        <label>Contraseña</label>
-        <input type="password" id="login-pass" required>
-      </div>
-      <button type="submit" style="width:100%; padding:.8rem; background:var(--espresso); color:var(--butter); border:none; border-radius:8px; font-weight:700;">Entrar</button>
-      <p id="login-err" style="color:var(--brick); font-size:.8rem; margin-top:.5rem;"></p>
-    </form>
-  </div>
-</div>
-
-<script>
-const SUPABASE_URL = 'https://cceyeoextdoqhqacnban.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_mAlRUydh4f-tJIF--U-Hrg_YAo-8kD1';
-const BUSINESS_NAME = 'Utensilios de Repostería y Más';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-let catalogItems = []; // Lista unificada de productos y variantes con stock
-let bill = [];         // Líneas de la factura actual
-
-const money = n => `L. ${Number(n || 0).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-// --- AUTENTICACIÓN ---
-async function initAuth() {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) {
-    document.getElementById('modal-login').classList.add('open');
-  } else {
-    loadInventory();
-  }
-}
-
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-pass').value;
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) {
-    document.getElementById('login-err').textContent = 'Credenciales incorrectas.';
-    return;
-  }
-  document.getElementById('modal-login').classList.remove('open');
-  loadInventory();
-});
-
-document.getElementById('btn-logout').addEventListener('click', async () => {
-  await sb.auth.signOut();
-  location.reload();
-});
-
-// --- NAVEGACIÓN ENTRE PESTAÑAS ---
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('view-' + btn.dataset.view).classList.add('active');
-    if (btn.dataset.view === 'report') loadSalesReport();
-  });
-});
-
-// --- CARGAR INVENTARIO (PRODUCTOS + COLORES) ---
-async function loadInventory() {
-  const [{ data: products }, { data: variants }] = await Promise.all([
-    sb.from('products').select('*').order('name'),
-    sb.from('product_variants').select('*').order('color_name')
-  ]);
-
-  const varsByProd = {};
-  (variants || []).forEach(v => {
-    if (!varsByProd[v.product_id]) varsByProd[v.product_id] = [];
-    varsByProd[v.product_id].push(v);
-  });
-
-  catalogItems = [];
-  (products || []).forEach(p => {
-    const basePrice = (p.offer_enabled && p.offer_price) ? Number(p.offer_price) : Number(p.price || 0);
-    const pVars = varsByProd[p.id] || [];
-    if (pVars.length > 0) {
-      pVars.forEach(v => {
-        catalogItems.push({
-          key: `p${p.id}-v${v.id}`,
-          producto_id: p.id,
-          variant_id: v.id,
-          descripcion: `${p.name} (${v.color_name})`,
-          precio: basePrice,
-          stock: Number(v.stock || 0),
-          img: v.image_url || p.image_url || ''
-        });
-      });
-    } else {
-      catalogItems.push({
-        key: `p${p.id}`,
-        producto_id: p.id,
-        variant_id: null,
-        descripcion: p.name,
-        precio: basePrice,
-        stock: Number(p.stock || 0),
-        img: p.image_url || ''
-      });
-    }
-  });
-  renderProductList();
-}
-
-function renderProductList() {
-  const q = document.getElementById('search-input').value.trim().toLowerCase();
-  const listEl = document.getElementById('prod-list');
-  const filtered = catalogItems.filter(i => !q || i.descripcion.toLowerCase().includes(q));
-
-  if (!filtered.length) {
-    listEl.innerHTML = '<p style="font-size:.85rem;color:#8a7960;text-align:center;">No encontrado. Usa "+ No en sistema".</p>';
-    return;
-  }
-
-  listEl.innerHTML = '';
-  filtered.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'prod-item';
-    div.innerHTML = `
-      <img src="${item.img || 'https://placehold.co/80x80/EFE6D8/3D2B1F?text=•'}" alt="">
-      <div class="prod-info">
-        <div class="prod-name">${item.descripcion}</div>
-        <div class="prod-meta">Stock: <strong style="color:${item.stock > 0 ? '#2c7a4b' : '#9C4A2E'}">${item.stock}</strong></div>
-      </div>
-      <div class="prod-price">${money(item.precio)}</div>
-    `;
-    div.onclick = () => addProductToBill(item);
-    listEl.appendChild(div);
-  });
-}
-document.getElementById('search-input').addEventListener('input', renderProductList);
-
-// --- AGREGAR A FACTURA ---
-function addProductToBill(item) {
-  if (item.stock <= 0) {
-    if (!confirm(`"${item.descripcion}" tiene 0 en stock. ¿Deseas agregarlo de todas formas?`)) return;
-  }
-  const existing = bill.find(b => b.key === item.key);
-  if (existing) {
-    existing.cantidad++;
-  } else {
-    bill.push({
-      key: item.key,
-      producto_id: item.producto_id,
-      variant_id: item.variant_id,
-      descripcion: item.descripcion,
-      precio_unitario: item.precio,
-      cantidad: 1,
-      es_manual: false
-    });
-  }
-  renderBill();
-}
-
-// --- PRODUCTO NO EN SISTEMA (MANUAL) ---
-const modalManual = document.getElementById('modal-manual');
-document.getElementById('btn-open-manual').onclick = () => {
-  document.getElementById('manual-desc').value = '';
-  document.getElementById('manual-price').value = '';
-  document.getElementById('manual-qty').value = '1';
-  modalManual.classList.add('open');
-  document.getElementById('manual-desc').focus();
-};
-document.getElementById('btn-close-manual').onclick = () => modalManual.classList.remove('open');
-
-document.getElementById('btn-save-manual').onclick = () => {
-  const desc = document.getElementById('manual-desc').value.trim();
-  const price = parseFloat(document.getElementById('manual-price').value);
-  const qty = parseInt(document.getElementById('manual-qty').value) || 1;
-  if (!desc || isNaN(price) || price < 0) return alert('Ingresa una descripción y un precio válido.');
-
-  bill.push({
-    key: 'manual-' + Date.now(),
-    producto_id: null,
-    variant_id: null,
-    descripcion: desc + ' [Manual]',
-    precio_unitario: price,
-    cantidad: qty,
-    es_manual: true
-  });
-  modalManual.classList.remove('open');
-  renderBill();
-};
-
-// --- RENDERIZAR FACTURA ACTUAL ---
-function renderBill() {
-  const listEl = document.getElementById('bill-list');
-  document.getElementById('bill-count').textContent = bill.reduce((s, i) => s + i.cantidad, 0);
-
-  if (!bill.length) {
-    listEl.innerHTML = '<p style="font-size:.85rem;color:#8a7960;text-align:center;">Toca un producto arriba para agregarlo a la cuenta.</p>';
-    document.getElementById('btn-facturar').disabled = true;
-    updateTotals();
-    return;
-  }
-
-  listEl.innerHTML = '';
-  bill.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'bill-item';
-    row.innerHTML = `
-      <div class="bill-desc">
-        <div class="bill-title">${item.descripcion}</div>
-        <div class="bill-sub">${money(item.precio_unitario)} c/u · Sub: ${money(item.precio_unitario * item.cantidad)}</div>
-      </div>
-      <div class="qty-ctrl">
-        <button class="qty-btn" data-d="-1">−</button>
-        <span class="qty-val">${item.cantidad}</span>
-        <button class="qty-btn" data-d="1">+</button>
-      </div>
-    `;
-    row.querySelector('[data-d="-1"]').onclick = () => {
-      item.cantidad--;
-      if (item.cantidad <= 0) bill.splice(idx, 1);
-      renderBill();
-    };
-    row.querySelector('[data-d="1"]').onclick = () => {
-      item.cantidad++;
-      renderBill();
-    };
-    listEl.appendChild(row);
-  });
-
-  document.getElementById('btn-facturar').disabled = false;
-  updateTotals();
-}
-
-function updateTotals() {
-  const sub = bill.reduce((s, i) => s + (i.precio_unitario * i.cantidad), 0);
-  const desc = Math.max(0, parseFloat(document.getElementById('input-descuento').value) || 0);
-  const total = Math.max(0, sub - desc);
-  document.getElementById('lbl-subtotal').textContent = money(sub);
-  document.getElementById('lbl-total').textContent = money(total);
-  return { sub, desc, total };
-}
-document.getElementById('input-descuento').addEventListener('input', updateTotals);
-
-// --- PROCESAR VENTA Y DESCONTAR INVENTARIO ---
-document.getElementById('btn-facturar').addEventListener('click', async () => {
-  if (!bill.length) return;
-  const btn = document.getElementById('btn-facturar');
-  btn.disabled = true;
-  btn.textContent = 'Procesando venta...';
-
-  const cliente = document.getElementById('cliente-nombre').value.trim() || 'Consumidor Final';
-  const metodo = document.getElementById('metodo-pago').value;
-  const { sub, desc, total } = updateTotals();
-
-  const { data, error } = await sb.rpc('registrar_venta_pos', {
-    p_cliente_nombre: cliente,
-    p_metodo_pago: metodo,
-    p_descuento: desc,
-    p_notas: null,
-    p_items: bill
-  });
-
-  if (error) {
-    alert('Error al registrar venta: ' + error.message);
-    btn.disabled = false;
-    btn.textContent = '✅ Facturar y Descontar Inventario';
-    return;
-  }
-
-  // Generar comprobante PDF
-  generarReciboPDF(data.id, cliente, metodo, bill, sub, desc, total);
-
-  // Reiniciar pantalla
-  bill = [];
-  document.getElementById('cliente-nombre').value = 'Consumidor Final';
-  document.getElementById('input-descuento').value = '0';
-  renderBill();
-  await loadInventory();
-  btn.textContent = '✅ Facturar y Descontar Inventario';
-  alert(`¡Venta #${data.id} registrada con éxito! Inventario actualizado.`);
-});
-
-function generarReciboPDF(ventaId, cliente, metodo, items, sub, desc, total) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ format: [80, 180], unit: 'mm' }); // Formato ticket térmico 80mm
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text(BUSINESS_NAME, 40, 10, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text(`Comprobante #${ventaId}`, 40, 15, { align: 'center' });
-  doc.text(new Date().toLocaleString('es-HN'), 40, 19, { align: 'center' });
-  doc.text(`Cliente: ${cliente}`, 5, 26);
-  doc.text(`Pago: ${metodo}`, 5, 30);
-
-  doc.autoTable({
-    startY: 34,
-    margin: { left: 4, right: 4 },
-    styles: { fontSize: 7, cellPadding: 1 },
-    head: [['Cant', 'Producto', 'Total']],
-    body: items.map(i => [i.cantidad, i.descripcion, money(i.cantidad * i.precio_unitario)]),
-    theme: 'plain'
-  });
-
-  let y = doc.lastAutoTable.finalY + 5;
-  doc.text(`Subtotal: ${money(sub)}`, 75, y, { align: 'right' });
-  if (desc > 0) { y += 4; doc.text(`Descuento: -${money(desc)}`, 75, y, { align: 'right' }); }
-  y += 5;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text(`TOTAL: ${money(total)}`, 75, y, { align: 'right' });
-  doc.save(`venta-${ventaId}.pdf`);
-}
-
-// --- REPORTE DE VENTAS ---
-async function loadSalesReport() {
-  const listEl = document.getElementById('sales-report-list');
-  listEl.innerHTML = 'Cargando ventas...';
-
-  const fechaFiltro = document.getElementById('filtro-fecha').value;
-  let query = sb.from('ventas').select('*, detalle_ventas(*)').order('fecha', { ascending: false });
-
-  if (fechaFiltro) {
-    query = query.gte('fecha', `${fechaFiltro}T00:00:00`).lte('fecha', `${fechaFiltro}T23:59:59`);
-  }
-
-  const { data, error } = await query;
-  if (error) {
-    listEl.innerHTML = `<p style="color:var(--brick);">Error: ${error.message}</p>`;
-    return;
-  }
-
-  const ventas = data || [];
-  const totalVendido = ventas.reduce((s, v) => s + Number(v.total || 0), 0);
-  document.getElementById('kpi-total').textContent = money(totalVendido);
-  document.getElementById('kpi-count').textContent = ventas.length;
-
-  if (!ventas.length) {
-    listEl.innerHTML = '<p style="text-align:center;color:#8a7960;">No hay ventas registradas en este periodo.</p>';
-    return;
-  }
-
-  listEl.innerHTML = '';
-  ventas.forEach(v => {
-    const itemsTxt = (v.detalle_ventas || [])
-      .map(d => `${d.cantidad}x ${d.descripcion} (${money(d.subtotal)})`)
-      .join(' · ');
-    const card = document.createElement('div');
-    card.className = 'sale-card';
-    card.innerHTML = `
-      <div class="sale-head">
-        <span>#${v.id} · ${v.cliente_nombre}</span>
-        <span style="color:#2c7a4b;">${money(v.total)}</span>
-      </div>
-      <div class="sale-meta">${new Date(v.fecha).toLocaleString('es-HN')} · ${v.metodo_pago}</div>
-      <div class="sale-items">${itemsTxt}</div>
-    `;
-    listEl.appendChild(card);
-  });
-}
-
-document.getElementById('filtro-fecha').addEventListener('change', loadSalesReport);
-document.getElementById('btn-ver-todas').addEventListener('click', () => {
-  document.getElementById('filtro-fecha').value = '';
-  loadSalesReport();
-});
-
-initAuth();
-</script>
-</body>
-</html>
