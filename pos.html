@@ -1,4 +1,19 @@
-// --- COTIZAR CON SUBIDA DE PDF A SUPABASE STORAGE (CORREGIDO) ---
+// --- FUNCIÓN AUXILIAR PARA SUBIR PDF A SUPABASE STORAGE ---
+async function subirPDFaStorage(fileName, pdfBlob) {
+  const { error: uploadErr } = await sb.storage
+    .from('facturas')
+    .upload(fileName, pdfBlob, { upsert: true, contentType: 'application/pdf' });
+
+  if (uploadErr) {
+    alert('⚠️ No se pudo subir el PDF a la nube (revisa permisos del bucket "facturas"): ' + uploadErr.message);
+    return '';
+  }
+
+  const { data: urlData } = sb.storage.from('facturas').getPublicUrl(fileName);
+  return urlData?.publicUrl || '';
+}
+
+// --- COTIZAR CON SUBIDA DE PDF Y ENLACE EN WHATSAPP ---
 document.getElementById('btn-cotizacion').addEventListener('click', async () => {
   if (!bill.length) return;
   const cliente = document.getElementById('cliente-nombre').value.trim() || 'Consumidor Final';
@@ -6,7 +21,8 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
   const { sub, desc, total } = updateTotals();
 
   const btn = document.getElementById('btn-cotizacion');
-  btn.disabled = true; btn.textContent = 'Subiendo PDF...';
+  btn.disabled = true;
+  btn.textContent = 'Subiendo PDF...';
 
   const { data, error } = await sb.rpc('guardar_cotizacion_pos', {
     p_cliente_nombre: cliente,
@@ -18,44 +34,37 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
 
   if (error) {
     alert('Error al guardar cotización: ' + error.message);
-    btn.disabled = false; btn.textContent = '💬 Cotizar';
+    btn.disabled = false;
+    btn.textContent = '💬 Cotizar';
     return;
   }
 
-  let publicUrl = '';
-  try {
-    const pdfBlob = generarCotizacionBlob(data.id, cliente, telefono, [...bill], sub, desc, total);
-    const fileName = `Cotizacion-${data.id}-${cliente.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-    
-    // Sube el archivo al bucket "facturas"
-    const { error: uploadErr } = await sb.storage.from('facturas').upload(fileName, pdfBlob, { upsert: true, contentType: 'application/pdf' });
-    
-    if (!uploadErr) {
-      const { data: urlData } = sb.storage.from('facturas').getPublicUrl(fileName);
-      publicUrl = urlData.publicUrl;
-    }
-  } catch (e) {
-    console.log('Error subiendo PDF a Storage:', e);
+  // 1. Generar PDF y subirlo a Supabase Storage
+  const pdfBlob = generarCotizacionBlob(data.id, cliente, telefono, [...bill], sub, desc, total);
+  const fileName = `Cotizacion-${data.id}-${Date.now()}.pdf`;
+  const publicUrl = await subirPDFaStorage(fileName, pdfBlob);
+
+  // 2. Armar mensaje de WhatsApp con el link
+  const lineas = bill.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
+  let msg = `¡Hola ${cliente}! Aquí tienes tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total Estimado: ${money(total)}*`;
+  if (publicUrl) {
+    msg += `\n\n📄 *Descarga tu cotización en PDF aquí:*\n${publicUrl}`;
   }
 
-  // Abre WhatsApp con el enlace de descarga incluido
   const waPhone = formatPhoneHN(telefono);
   if (waPhone) {
-    const lineas = bill.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
-    let msg = `¡Hola ${cliente}! Adjunto tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total Estimado: ${money(total)}*`;
-    
-    if (publicUrl) {
-      msg += `\n\n📄 Descarga tu PDF oficial aquí:\n${publicUrl}`;
-    }
-    
     window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  } else if (publicUrl) {
+    // Si no ingresaste teléfono, igual te da opción de abrir WhatsApp para elegir contacto
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
-  alert(`¡Cotización #${data.id} guardada con éxito!`);
+  alert(`¡Cotización #${data.id} guardada!${publicUrl ? '\nEnlace PDF generado.' : ''}`);
   bill = [];
   document.getElementById('cliente-nombre').value = 'Consumidor Final';
   document.getElementById('cliente-telefono').value = '';
   document.getElementById('input-descuento').value = '0';
   renderBill();
-  btn.disabled = false; btn.textContent = '💬 Cotizar';
+  btn.disabled = false;
+  btn.textContent = '💬 Cotizar';
 });
