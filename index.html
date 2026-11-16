@@ -1175,6 +1175,13 @@
   .pv-add-row button{background:var(--butter);color:var(--espresso);border:none;border-radius:6px;padding:.5rem .8rem;font-family:'Inter',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;}
   .pv-empty{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#8a7960;font-style:italic;margin-bottom:.4rem;}
 
+  /* ---------- FOTOS CON CÁMARA ---------- */
+  .photo-actions{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.4rem;}
+  .photo-btn{background:var(--butter);color:var(--espresso);border:none;border-radius:6px;padding:.5rem .8rem;font-family:'Inter',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;}
+  .photo-btn.alt{background:var(--parchment-dark);}
+  .photo-preview{width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid var(--parchment-dark);display:none;}
+  .pv-color-row button.pv-cam,.pi-row button.pi-star{background:var(--butter);color:var(--espresso);}
+
   /* ---------- EDITOR DE IMÁGENES ADICIONALES ---------- */
   .pi-row{
     display:flex;
@@ -1350,6 +1357,11 @@
           <div class="form-group">
             <label for="product-image">Link de la imagen (URL)</label>
             <input type="url" id="product-image" placeholder="https://...">
+            <div class="photo-actions">
+              <button type="button" class="photo-btn" id="photo-main-cam">📷 Tomar foto</button>
+              <button type="button" class="photo-btn alt" id="photo-main-gal">🖼️ Galería</button>
+              <img id="product-image-preview" class="photo-preview" alt="">
+            </div>
           </div>
           <div class="form-group form-check">
             <input type="checkbox" id="product-instock" checked>
@@ -1379,6 +1391,10 @@
           <div class="pi-row">
             <input type="url" id="pi-new-url" placeholder="https://... (URL de otra imagen)">
             <button type="button" id="pi-add-btn" class="pi-add-btn" style="border-radius:50%;width:28px;height:28px;padding:0;">➕</button>
+          </div>
+          <div class="photo-actions" style="margin-bottom:.8rem;">
+            <button type="button" class="photo-btn" id="pi-cam-btn">📷 Tomar foto</button>
+            <button type="button" class="photo-btn alt" id="pi-gal-btn">🖼️ Elegir de galería</button>
           </div>
 
           <div class="form-actions">
@@ -2132,6 +2148,137 @@ hasOfferCheckbox.addEventListener('change', () => {
   if(!hasOfferCheckbox.checked) offerPriceInput.value = '';
 });
 
+/* ---- Fotos con cámara: se reducen y se suben a Supabase Storage (bucket "productos", carpeta = id del producto) ---- */
+let pendingMainBlob = null;
+const mainPhotoPreviewEl = document.getElementById('product-image-preview');
+const mainImageInputEl = document.getElementById('product-image');
+mainPhotoPreviewEl.addEventListener('error', () => { mainPhotoPreviewEl.style.display = 'none'; });
+
+function showMainPreview(src){
+  if(src){ mainPhotoPreviewEl.src = src; mainPhotoPreviewEl.style.display = 'block'; }
+  else { mainPhotoPreviewEl.removeAttribute('src'); mainPhotoPreviewEl.style.display = 'none'; }
+}
+function clearMainPhoto(){ pendingMainBlob = null; showMainPreview(''); }
+mainImageInputEl.addEventListener('input', () => { pendingMainBlob = null; showMainPreview(mainImageInputEl.value.trim()); });
+
+async function compressImage(file, maxSide = 1200, quality = 0.82){
+  let bmp;
+  try{ bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+  catch(e){
+    bmp = await new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.onerror = rej;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+  const scale = Math.min(1, maxSide / Math.max(w, h));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(w * scale);
+  canvas.height = Math.round(h * scale);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+  if(!blob) throw new Error('No se pudo comprimir la foto');
+  return blob;
+}
+
+function pickPhoto({ capture = false, multiple = false }, onBlob){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.multiple = multiple;
+  if(capture) inp.setAttribute('capture', 'environment');
+  inp.style.display = 'none';
+  document.body.appendChild(inp);
+  inp.addEventListener('cancel', () => inp.remove());
+  inp.addEventListener('change', async () => {
+    const files = Array.from(inp.files || []);
+    inp.remove();
+    for(const f of files){
+      try{ onBlob(await compressImage(f)); }
+      catch(err){ console.error(err); alert('No se pudo procesar la foto. Intenta de nuevo.'); }
+    }
+  });
+  inp.click();
+}
+
+function setMainBlob(blob){
+  pendingMainBlob = blob;
+  mainImageInputEl.value = '';
+  showMainPreview(URL.createObjectURL(blob));
+}
+function addExtraBlob(blob){
+  pendingImages.push({ _tempId: ++tempIdCounter, image_url: '', _blob: blob, _preview: URL.createObjectURL(blob) });
+  renderPendingImages();
+}
+document.getElementById('photo-main-cam').addEventListener('click', () => pickPhoto({ capture: true }, setMainBlob));
+document.getElementById('photo-main-gal').addEventListener('click', () => pickPhoto({}, setMainBlob));
+document.getElementById('pi-cam-btn').addEventListener('click', () => pickPhoto({ capture: true }, addExtraBlob));
+document.getElementById('pi-gal-btn').addEventListener('click', () => pickPhoto({ multiple: true }, addExtraBlob));
+
+// Convierte una foto adicional en la principal (la principal actual pasa a ser adicional)
+function makeExtraMain(img){
+  const oldBlob = pendingMainBlob;
+  const oldUrl = mainImageInputEl.value.trim();
+  if(img._blob){
+    pendingMainBlob = img._blob;
+    mainImageInputEl.value = '';
+    showMainPreview(img._preview);
+  }else{
+    pendingMainBlob = null;
+    mainImageInputEl.value = img.image_url;
+    showMainPreview(img.image_url);
+  }
+  if(img.id){ img._deleted = true; } else { pendingImages = pendingImages.filter(x => x !== img); }
+  if(oldBlob){
+    pendingImages.push({ _tempId: ++tempIdCounter, image_url: '', _blob: oldBlob, _preview: URL.createObjectURL(oldBlob) });
+  }else if(oldUrl){
+    pendingImages.push({ _tempId: ++tempIdCounter, image_url: oldUrl });
+  }
+  renderPendingImages();
+}
+
+async function uploadPhoto(productId, blob, prefix){
+  const path = `${productId}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.jpg`;
+  const { error } = await sb.storage.from('productos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
+  if(error) throw error;
+  return sb.storage.from('productos').getPublicUrl(path).data.publicUrl;
+}
+
+// Sube las fotos pendientes (principal, adicionales y de colores). Devuelve cuántas fallaron.
+async function uploadPendingPhotos(productId){
+  const hasAny = pendingMainBlob || pendingImages.some(i => i._blob && !i._deleted) || pendingVariants.some(v => v._blob && !v._deleted);
+  if(!hasAny) return 0;
+  productMsg.textContent = 'Subiendo fotos...';
+  let errors = 0;
+  if(pendingMainBlob){
+    try{
+      const url = await uploadPhoto(productId, pendingMainBlob, 'principal');
+      const { error } = await sb.from('products').update({ image_url: url }).eq('id', productId);
+      if(error) throw error;
+    }catch(err){ console.error(err); errors++; }
+  }
+  for(const img of pendingImages){
+    if(!img._blob || img._deleted) continue;
+    try{
+      img.image_url = await uploadPhoto(productId, img._blob, 'foto');
+      delete img._blob; delete img._preview;
+    }catch(err){ console.error(err); errors++; img._deleted = true; }
+  }
+  for(const v of pendingVariants){
+    if(!v._blob || v._deleted) continue;
+    try{
+      v.image_url = await uploadPhoto(productId, v._blob, 'color');
+      delete v._blob; delete v._preview;
+    }catch(err){ console.error(err); errors++; delete v._blob; }
+  }
+  return errors;
+}
+
 /* ---- Colores/cantidad e imágenes pendientes dentro del formulario ---- */
 const productVariantListEl = document.getElementById('product-variant-list');
 const productImagesListEl = document.getElementById('product-images-list');
@@ -2169,12 +2316,30 @@ function renderPendingVariants(){
       <input type="number" min="0" step="1" value="${v.stock || 0}" title="Cantidad">
       <input type="url" value="${v.image_url || ''}" placeholder="URL de la foto de este color (opcional)">
       <button type="button" title="Quitar">🗑</button>
+      <button type="button" class="pv-cam" title="Tomar foto de este color">📷</button>
     `;
     const [hexInput, nameInput, qtyInput, imageInput] = row.querySelectorAll('input');
     hexInput.addEventListener('input', () => v.color_hex = hexInput.value);
     nameInput.addEventListener('input', () => v.color_name = nameInput.value);
     qtyInput.addEventListener('input', () => v.stock = Math.max(0, parseInt(qtyInput.value) || 0));
-    imageInput.addEventListener('input', () => v.image_url = imageInput.value.trim());
+    imageInput.addEventListener('input', () => {
+      v.image_url = imageInput.value.trim();
+      delete v._blob; delete v._preview;
+      imageInput.placeholder = 'URL de la foto de este color (opcional)';
+      camBtn.textContent = '📷';
+    });
+    const camBtn = row.querySelector('.pv-cam');
+    if(v._blob){
+      imageInput.placeholder = '📷 Foto lista: se sube al guardar';
+      camBtn.textContent = '✅';
+    }
+    camBtn.addEventListener('click', () => pickPhoto({ capture: true }, blob => {
+      v._blob = blob;
+      v._preview = URL.createObjectURL(blob);
+      imageInput.value = '';
+      imageInput.placeholder = '📷 Foto lista: se sube al guardar';
+      camBtn.textContent = '✅';
+    }));
     row.querySelector('button').addEventListener('click', () => {
       if(v.id){ v._deleted = true; } else { pendingVariants = pendingVariants.filter(x => x !== v); }
       renderPendingVariants();
@@ -2213,14 +2378,17 @@ function renderPendingImages(){
   rows.forEach(img => {
     const row = document.createElement('div');
     row.className = 'pi-row';
+    const hasBlob = !!img._blob;
     row.innerHTML = `
-      <img src="${img.image_url}" alt="">
-      <input type="url" value="${img.image_url}" placeholder="https://...">
-      <button type="button" title="Quitar">🗑</button>
+      <img src="${hasBlob ? img._preview : img.image_url}" alt="">
+      <input type="url" value="${hasBlob ? '' : img.image_url}" placeholder="${hasBlob ? '📷 Foto nueva: se sube al guardar' : 'https://...'}" ${hasBlob ? 'disabled' : ''}>
+      <button type="button" class="pi-star" title="Usar como foto principal">⭐</button>
+      <button type="button" class="pi-del" title="Quitar">🗑</button>
     `;
     const [thumb, urlInput] = row.querySelectorAll('img, input');
     urlInput.addEventListener('input', () => { img.image_url = urlInput.value.trim(); thumb.src = img.image_url; });
-    row.querySelector('button').addEventListener('click', () => {
+    row.querySelector('.pi-star').addEventListener('click', () => makeExtraMain(img));
+    row.querySelector('.pi-del').addEventListener('click', () => {
       if(img.id){ img._deleted = true; } else { pendingImages = pendingImages.filter(x => x !== img); }
       renderPendingImages();
     });
@@ -2251,6 +2419,7 @@ function resetProductForm(){
   productMsg.className = 'form-msg';
   pendingVariants = [];
   pendingImages = [];
+  clearMainPhoto();
   renderPendingVariants();
   renderPendingImages();
 }
@@ -2316,6 +2485,11 @@ productForm.addEventListener('submit', async (e) => {
     payload.stock = Math.max(0, parseInt(document.getElementById('product-stock').value) || 0);
   }
 
+  // Si hay una foto nueva como principal, el link se guarda después de subirla
+  if(pendingMainBlob){
+    if(id){ delete payload.image_url; } else { payload.image_url = ''; }
+  }
+
   productSubmitBtn.disabled = true;
   productMsg.textContent = 'Guardando...';
   productMsg.className = 'form-msg';
@@ -2336,7 +2510,9 @@ productForm.addEventListener('submit', async (e) => {
     return;
   }
 
+  let photoErrors = 0;
   if(productId){
+    photoErrors = await uploadPendingPhotos(productId);
     await saveVariantsAndImages(productId);
   }
 
@@ -2344,6 +2520,10 @@ productForm.addEventListener('submit', async (e) => {
   productMsg.textContent = id ? 'Producto actualizado.' : 'Producto agregado.';
   productMsg.className = 'form-msg success';
   resetProductForm();
+  if(photoErrors){
+    productMsg.textContent = `Producto guardado, pero ${photoErrors} foto(s) no se pudieron subir. Edítalo e inténtalo de nuevo.`;
+    productMsg.className = 'form-msg error';
+  }
   await loadProductImages();
   await loadProducts();
   renderAdminList();
@@ -2356,6 +2536,8 @@ async function fillFormForEdit(p){
   document.getElementById('product-price').value = p.price || 0;
   document.getElementById('product-category').value = p.category || '';
   document.getElementById('product-image').value = p.image_url || '';
+  clearMainPhoto();
+  showMainPreview(p.image_url || '');
   document.getElementById('product-instock').checked = p.in_stock !== false;
   document.getElementById('product-stock').value = p.stock != null ? p.stock : 1;
   hasOfferCheckbox.checked = !!p.offer_enabled;
