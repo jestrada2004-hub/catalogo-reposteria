@@ -105,6 +105,22 @@
     .shipping-banner-track{animation:none;}
   }
 
+
+  /* ---------- BANNER PROMO ENVÍO GRATIS ---------- */
+  .promo-bar{position:relative;display:flex;align-items:center;justify-content:center;gap:.9rem;flex-wrap:wrap;padding:.7rem 2.6rem .7rem 1rem;background:linear-gradient(90deg,#2A1B12,var(--espresso),#2A1B12);color:var(--parchment);text-align:center;}
+  .promo-bar[hidden]{display:none;}
+  .promo-title{font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;letter-spacing:.06em;color:var(--butter);}
+  .promo-text{font-family:'Inter',sans-serif;font-size:.85rem;}
+  .promo-timer{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1rem;background:rgba(0,0,0,.35);border-radius:6px;padding:.2rem .55rem;min-width:92px;display:inline-block;}
+  .promo-code{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.8rem;letter-spacing:.05em;border:2px dashed var(--butter);color:var(--butter);background:transparent;border-radius:6px;padding:.25rem .6rem;cursor:pointer;}
+  .promo-code:hover{background:rgba(197,160,89,.15);}
+  .promo-cta{border:none;border-radius:6px;background:var(--butter);color:var(--espresso);font-family:'Inter',sans-serif;font-weight:700;font-size:.82rem;padding:.45rem .9rem;cursor:pointer;}
+  .promo-cta:hover{filter:brightness(1.08);}
+  .promo-close{position:absolute;top:50%;right:.7rem;transform:translateY(-50%);border:none;background:none;color:var(--parchment);font-size:1.4rem;line-height:1;cursor:pointer;opacity:.8;}
+  .promo-close:hover{opacity:1;}
+  .promo-toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);background:var(--espresso);color:#fff;padding:.6rem 1rem;border-radius:8px;font-family:'Inter',sans-serif;font-size:.85rem;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.3);}
+  @media(max-width:600px){.promo-bar{gap:.5rem;padding-right:2.2rem;}.promo-title{width:100%;}}
+
   /* ---------- HEADER ---------- */
   header{
     background:var(--espresso);
@@ -782,6 +798,32 @@
   .admin-tab-panel{display:none;}
   .admin-tab-panel.active{display:block;}
 
+
+  /* ---------- COMPRAS ---------- */
+  .admin-tabs{overflow-x:auto;}
+  .admin-tab-btn{white-space:nowrap;flex:none;}
+  .tab-count{display:inline-block;min-width:18px;padding:0 .35rem;margin-left:.3rem;border-radius:9px;background:var(--brick);color:#fff;font-size:.65rem;line-height:18px;text-align:center;}
+  .purchases-toolbar{display:flex;gap:.5rem;flex-wrap:wrap;margin:.7rem 0 .3rem;}
+  .purchases-toolbar input{flex:1;min-width:180px;padding:.65rem .9rem;border:2px solid var(--parchment-dark);border-radius:6px;font-family:'Inter',sans-serif;font-size:.9rem;}
+  .pur-alert{padding:.8rem 1rem;border-radius:8px;font-family:'Inter',sans-serif;font-size:.88rem;font-weight:600;}
+  .pur-alert.warn{background:#fff1d6;border:1px solid #e8b95a;color:#7a4d00;}
+  .pur-alert.ok{background:#dff0e4;border:1px solid #9fd0ae;color:#2c7a4b;}
+  .pur-alert small{display:block;font-weight:400;margin-top:.2rem;}
+  .pur-row{display:grid;grid-template-columns:52px 1fr auto;gap:.7rem;align-items:center;background:#fff;border:1px solid var(--parchment-dark);border-left:5px solid #e8a33d;border-radius:8px;padding:.6rem;margin-bottom:.55rem;}
+  .pur-row.out{border-left-color:var(--brick);}
+  .pur-row img{width:52px;height:52px;object-fit:cover;border-radius:6px;background:var(--parchment-dark);}
+  .pur-name{font-family:'Fraunces',serif;font-weight:600;}
+  .pur-meta{font-size:.72rem;color:#8a7960;margin-top:.1rem;display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;}
+  .pur-dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.25);display:inline-block;}
+  .pur-msg{font-size:.76rem;margin-top:.3rem;color:#7a4d00;}
+  .pur-row.out .pur-msg{color:var(--brick);}
+  .pur-side{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;}
+  .pur-badge{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:700;padding:.25rem .55rem;border-radius:999px;background:#fff1d6;color:#7a4d00;white-space:nowrap;}
+  .pur-row.out .pur-badge{background:#f5dede;color:var(--brick);}
+  .pur-buy{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:#6e5b4a;}
+  .pur-buy input{width:64px;padding:.35rem .4rem;border:2px solid var(--parchment-dark);border-radius:6px;font-family:'IBM Plex Mono',monospace;}
+  @media(max-width:600px){.pur-row{grid-template-columns:52px 1fr}.pur-side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center}}
+
   /* ---------- INVENTARIO ---------- */
   #inventory-search{
     width:100%;
@@ -1255,7 +1297,16 @@
 </head>
 <body>
 
-<div class="shipping-banner">
+<div class="promo-bar" id="promo-bar" hidden>
+  <span class="promo-title">🚚 ENVÍO GRATIS</span>
+  <span class="promo-text">Comprá en las próximas 2 horas y no pagás envío ⚡</span>
+  <span class="promo-timer" id="promo-timer">--:--:--</span>
+  <button type="button" class="promo-code" id="promo-code-btn" title="Toca para copiar el código">ENVIOGRATIS01</button>
+  <button type="button" class="promo-cta" id="promo-cta">Comprar ahora</button>
+  <button type="button" class="promo-close" id="promo-close" aria-label="Cerrar">&times;</button>
+</div>
+
+<div class="shipping-banner" id="shipping-banner">
   <div class="shipping-banner-track">
     <span>🚚 Envíos a nivel nacional</span>
     <span>🚚 Envíos a nivel nacional</span>
@@ -1334,6 +1385,7 @@
     <div class="admin-tabs">
       <button type="button" class="admin-tab-btn active" data-admin-tab="product">Administración de producto</button>
       <button type="button" class="admin-tab-btn" data-admin-tab="inventory">Inventario</button>
+      <button type="button" class="admin-tab-btn" data-admin-tab="purchases">Compras <span class="tab-count" id="purchases-tab-count" style="display:none;"></span></button>
       <button type="button" class="admin-tab-btn" data-admin-tab="orders">Pedidos Web</button>
       <button type="button" class="admin-tab-btn" data-admin-tab="visits">Visitas</button>
     </div>
@@ -1439,6 +1491,17 @@
         </div>
       </div>
 
+
+      <!-- ===== PESTAÑA: COMPRAS ===== -->
+      <div class="admin-tab-panel" id="admin-tab-purchases">
+        <div id="purchases-alert"></div>
+        <div class="purchases-toolbar">
+          <input id="purchases-search" type="text" placeholder="Buscar producto por comprar...">
+          <button type="button" class="btn btn-primary" id="purchases-copy">📋 Copiar lista de compras</button>
+        </div>
+        <div class="form-msg" id="purchases-msg"></div>
+        <div id="purchases-list"><p class="pv-empty">Cargando...</p></div>
+      </div>
 
       <div class="admin-tab-panel" id="admin-tab-orders">
         <div class="orders-toolbar"><input id="orders-search" type="text" placeholder="Buscar por cliente, teléfono o número de pedido..."></div>
@@ -1724,7 +1787,7 @@ window.addEventListener('popstate', (e) => {
 
 function renderTabs(){
   // Genera las pestañas: la categoría "nuevas" primero, luego el resto, y "Todos" al final. Se ocultan las categorías sin productos.
-  const nonEmptyCats = dbCategories.filter(c => allProducts.some(p => String(p.category) === String(c.id)));
+  const nonEmptyCats = dbCategories.filter(c => storeProducts().some(p => String(p.category) === String(c.id)));
   const catNames = nonEmptyCats.map(c => c.name);
   const priorityIdx = catNames.findIndex(n => /nueva/i.test(n));
   let ordered = [...catNames];
@@ -1770,7 +1833,7 @@ function renderGrid(){
     return;
   }
 
-  const filtered = allProducts.filter(p => {
+  const filtered = storeProducts().filter(p => {
     const matchesCat = activeCategory === 'Todos' || getCategoryName(p.category) === activeCategory;
     const matchesTerm = !term || p.name.toLowerCase().includes(term) || (p.description||'').toLowerCase().includes(term);
     return matchesCat && matchesTerm;
@@ -1863,7 +1926,7 @@ function renderCategoryTiles(){
     gridEl.innerHTML = '<div class="empty-msg">Todavía no hay categorías creadas.</div>';
     return;
   }
-  if(dbCategories.every(cat => allProducts.filter(p => String(p.category) === String(cat.id)).length === 0)){
+  if(dbCategories.every(cat => storeProducts().filter(p => String(p.category) === String(cat.id)).length === 0)){
     gridEl.innerHTML = '<div class="empty-msg">Todavía no hay productos cargados.</div>';
     return;
   }
@@ -1871,7 +1934,7 @@ function renderCategoryTiles(){
   const rotatingTiles = []; // { pool:[urls], imgEls:[img,img,img,img] }
 
   dbCategories.forEach(cat => {
-    const productsInCat = allProducts.filter(p => String(p.category) === String(cat.id));
+    const productsInCat = storeProducts().filter(p => String(p.category) === String(cat.id));
     if(productsInCat.length === 0) return;
     let pool = [...new Set(productsInCat.map(p => p.image_url).filter(Boolean))];
     if(pool.length === 0) pool = ['https://placehold.co/300x300/E8C5C8/3D2B1F?text=' + encodeURIComponent(cat.name)];
@@ -2143,10 +2206,16 @@ function switchAdminTab(tab){
   });
   document.getElementById('admin-tab-product').classList.toggle('active', tab === 'product');
   document.getElementById('admin-tab-inventory').classList.toggle('active', tab === 'inventory');
+  document.getElementById('admin-tab-purchases').classList.toggle('active', tab === 'purchases');
   document.getElementById('admin-tab-orders').classList.toggle('active', tab === 'orders');
   document.getElementById('admin-tab-visits').classList.toggle('active', tab === 'visits');
   if(tab === 'inventory'){
     renderInventoryList();
+  }
+  if(tab === 'purchases'){
+    renderPurchases();
+  }else{
+    updatePurchasesBadge();
   }
   if(tab === 'orders'){
     renderOrdersList();
@@ -2580,8 +2649,10 @@ productForm.addEventListener('submit', async (e) => {
     productMsg.className = 'form-msg error';
   }
   await loadProductImages();
+  await loadProductVariants();
   await loadProducts();
   renderAdminList();
+  updatePurchasesBadge();
 });
 
 async function fillFormForEdit(p){
@@ -2704,8 +2775,8 @@ async function renderInventoryList(){
 }
 
 function productTotalStock(productId){
-  const rows = variantsByProduct[productId] || [];
-  return rows.reduce((sum, r) => sum + (r.stock || 0), 0);
+  const p = inventoryProducts.find(x => x.id === productId) || { stock: 0 };
+  return calcStock(p, variantsByProduct[productId] || []);
 }
 
 async function syncProductAvailability(productId){
@@ -2714,11 +2785,14 @@ async function syncProductAvailability(productId){
   if(!error){
     const invP = inventoryProducts.find(x => x.id === productId);
     if(invP) invP.in_stock = total > 0;
+    publicVariantsByProduct[productId] = [...(variantsByProduct[productId] || [])];
     const cached = allProducts.find(x => x.id === productId);
     if(cached){
       cached.in_stock = total > 0;
-      renderGrid();
     }
+    renderTabs();
+    renderGrid();
+    if(typeof updatePurchasesBadge === 'function') updatePurchasesBadge();
   }
 }
 
@@ -3010,12 +3084,15 @@ let appliedCoupon = null;
 
 function money(n){ return `L. ${Number(n || 0).toLocaleString('es-HN',{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
 function saveCart(){ localStorage.setItem('reposteria_cart', JSON.stringify(cart)); updateCartUI(); }
-function getProductStock(product){
-  const variants = publicVariantsByProduct[product.id] || [];
-  if(variants.length) return variants.reduce((s,v)=>s+Math.max(0,Number(v.stock)||0),0);
-  if(product.stock != null) return Math.max(0,Number(product.stock)||0);
-  return product.in_stock === false ? 0 : 999999;
+// Cantidad real: suma de colores si tiene colores; si no, el campo "Cantidad en inventario" del producto (vacío = 0)
+function calcStock(product, variants){
+  if(variants && variants.length) return variants.reduce((s,v)=>s+Math.max(0,Number(v.stock)||0),0);
+  return Math.max(0, Number(product.stock) || 0);
 }
+function getProductStock(product){ return calcStock(product, publicVariantsByProduct[product.id]); }
+// La tienda solo muestra productos con inventario mayor a 0
+function isInStore(product){ return getProductStock(product) > 0; }
+function storeProducts(){ return allProducts.filter(isInStore); }
 function getCartItemStock(item){
   const p = allProducts.find(x=>String(x.id)===String(item.product_id));
   if(!p) return 0;
@@ -3065,7 +3142,7 @@ function discountAmount(){
   const d=appliedCoupon.tipo_descuento==='porcentaje' ? sub*(Number(appliedCoupon.valor)/100) : Number(appliedCoupon.valor);
   return Math.min(sub,Math.max(0,d));
 }
-function cartShippingCost(){ return window.checkoutDeliveryMethod === 'domicilio' ? 150 : 0; }
+function cartShippingCost(){ return window.checkoutDeliveryMethod === 'domicilio' && !window.freeShippingApplied ? 150 : 0; }
 function cartTotal(){ return Math.max(0,cartSubtotal()-discountAmount()+cartShippingCost()); }
 function cartQty(){ return cart.reduce((s,i)=>s+Number(i.quantity),0); }
 function updateCartUI(){
@@ -3142,11 +3219,18 @@ cartFab.addEventListener('click',async()=>{await refreshCartInventory();updateCa
 
 document.getElementById('apply-coupon').addEventListener('click',async()=>{
   const code=document.getElementById('coupon-code').value.trim().toUpperCase(); const msg=document.getElementById('coupon-msg');
-  if(!code){appliedCoupon=null;msg.textContent='Escribe un código.';msg.className='coupon-msg err';updateCartUI();return;}
+  window.freeShippingApplied=false;
+  if(!code){appliedCoupon=null;msg.textContent='Escribe un código.';msg.className='coupon-msg err';updateCartUI();updateCheckoutSummary();return;}
+  if(code===PROMO_CODE){
+    appliedCoupon=null;
+    if(promoIsActive()){ window.freeShippingApplied=true; msg.textContent='🚚 Envío gratis aplicado (aplica al elegir envío a domicilio).'; msg.className='coupon-msg ok'; }
+    else { msg.textContent='Esta promoción de envío gratis ya terminó.'; msg.className='coupon-msg err'; }
+    updateCartUI(); updateCheckoutSummary(); return;
+  }
   const {data,error}=await sb.from('cupones').select('id,codigo,tipo_descuento,valor,activo').eq('codigo',code).eq('activo',true).maybeSingle();
   if(error||!data){appliedCoupon=null;msg.textContent='Cupón inválido o inactivo.';msg.className='coupon-msg err';}
   else {appliedCoupon=data;msg.textContent=`Cupón aplicado: ${data.tipo_descuento==='porcentaje'?data.valor+'%':money(data.valor)}`;msg.className='coupon-msg ok';}
-  updateCartUI();
+  updateCartUI(); updateCheckoutSummary();
 });
 
 window.checkoutDeliveryMethod = null;
@@ -3178,6 +3262,7 @@ function updateDeliveryUI(){
   updateCheckoutSummary();
 }
 function updateCheckoutSummary(){
+  deliveryNoteEl.textContent = window.freeShippingApplied ? '🚚 ¡Envío gratis aplicado! No se cobrará costo de envío.' : 'El costo de envío de L. 150.00 se sumará al total de la orden.';
   const ship=cartShippingCost();
   checkoutFinalSummaryEl.innerHTML=`<div class="summary-row"><span>Subtotal</span><strong>${money(cartSubtotal())}</strong></div><div class="summary-row"><span>Descuento</span><strong>- ${money(discountAmount())}</strong></div><div class="summary-row"><span>Impuesto sobre venta (15%)</span><strong>L. 0.00</strong></div><div class="summary-row"><span>Costo de envío</span><strong>${money(ship)}</strong></div><div class="summary-row total"><span>Total</span><strong>${money(cartTotal())}</strong></div>`;
 }
@@ -3214,7 +3299,7 @@ document.getElementById('checkout-form').addEventListener('submit',async(e)=>{
     const lines=details.map(i=>`• ${i.cantidad} x ${i.producto_nombre}${i.variant_nombre?' ('+i.variant_nombre+')':''} — ${money(i.cantidad*i.precio_unitario)}`);
     const entregaTexto=payload.tipo_entrega==='recoger'?'🏪 Recoger en tienda\nUbicación: Tegucigalpa, Honduras':'🚚 Enviar a domicilio\nCosto de envío: '+money(payload.costo_envio)+'\nDirección: '+payload.direccion;
     const wa=`Hola, quiero confirmar mi pedido #${order.id}.\n\n${lines.join('\n')}\n\nSubtotal: ${money(cartSubtotal())}\nDescuento: ${money(discountAmount())}\nImpuesto sobre venta (15%): L. 0.00\nCosto de envío: ${money(payload.costo_envio)}\nTotal: ${money(order.total)}\n\n${entregaTexto}\n\nCliente: ${payload.cliente_nombre}\nTeléfono: ${payload.cliente_telefono}${payload.notas?'\nNotas: '+payload.notas:''}`;
-    cart=[]; appliedCoupon=null; saveCart(); document.getElementById('checkout-form').reset(); closeModal(checkoutModal); window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(wa)}`,'_blank');
+    cart=[]; appliedCoupon=null; window.freeShippingApplied=false; saveCart(); document.getElementById('checkout-form').reset(); closeModal(checkoutModal); window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(wa)}`,'_blank');
     alert(`Pedido #${order.id} registrado. Se descargó el PDF y se abrirá WhatsApp.`);
   }catch(err){ console.error(err); checkoutMsgEl.textContent='No se pudo completar el pedido: '+(err.message||err); checkoutMsgEl.className='form-msg error'; }
   finally{submit.disabled=false;}
@@ -3330,6 +3415,205 @@ async function invoiceOrder(order,btn){
   alert(`Pedido #${order.id} facturado correctamente. Inventario descontado.`); await loadProductVariants(); await loadProducts(); await renderOrdersList(); if(document.getElementById('admin-tab-inventory').classList.contains('active'))renderInventoryList();
 }
 ordersSearchEl.addEventListener('input',drawOrders);
+
+
+/* =========================================================
+   COMPRAS: productos (o colores) con 2 unidades o menos
+   ========================================================= */
+const LOW_STOCK_LIMIT = 2;
+const purchasesListEl = document.getElementById('purchases-list');
+const purchasesAlertEl = document.getElementById('purchases-alert');
+const purchasesSearchEl = document.getElementById('purchases-search');
+const purchasesMsgEl = document.getElementById('purchases-msg');
+const purchasesCountEl = document.getElementById('purchases-tab-count');
+let purchaseItems = [];
+let purchaseQty = {}; // { key: cantidad a comprar }
+
+function escHtml(t){
+  return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function fetchPurchaseItems(){
+  if(!sb) return null;
+  const [{ data: products, error: pe }, { data: variants, error: ve }] = await Promise.all([
+    sb.from('products').select('*').order('name', {ascending:true}),
+    sb.from('product_variants').select('*')
+  ]);
+  if(pe || ve) return null;
+  const byProduct = {};
+  (variants || []).forEach(v => { (byProduct[v.product_id] = byProduct[v.product_id] || []).push(v); });
+  const items = [];
+  (products || []).forEach(p => {
+    const vs = byProduct[p.id] || [];
+    const category = getCategoryName(p.category) || 'Sin categoría';
+    if(vs.length){
+      vs.forEach(v => {
+        const st = Math.max(0, Number(v.stock) || 0);
+        if(st <= LOW_STOCK_LIMIT) items.push({ key: 'v' + v.id, name: p.name, image: v.image_url || p.image_url, category, color: v.color_name, hex: v.color_hex, stock: st });
+      });
+    }else{
+      const st = Math.max(0, Number(p.stock) || 0);
+      if(st <= LOW_STOCK_LIMIT) items.push({ key: 'p' + p.id, name: p.name, image: p.image_url, category, color: '', hex: '', stock: st });
+    }
+  });
+  items.sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name, 'es'));
+  return items;
+}
+
+function setPurchasesBadge(n){
+  purchasesCountEl.textContent = n;
+  purchasesCountEl.style.display = n > 0 ? 'inline-block' : 'none';
+}
+
+async function updatePurchasesBadge(){
+  try{
+    const items = await fetchPurchaseItems();
+    if(items) setPurchasesBadge(items.length);
+  }catch(e){ console.error(e); }
+}
+
+async function renderPurchases(){
+  purchasesMsgEl.textContent = '';
+  purchasesListEl.innerHTML = '<p class="pv-empty">Cargando...</p>';
+  let items = null;
+  try{ items = await fetchPurchaseItems(); }catch(e){ console.error(e); }
+  if(!items){
+    purchasesListEl.innerHTML = '<p style="color:var(--brick);">No se pudo cargar la información de compras.</p>';
+    return;
+  }
+  purchaseItems = items;
+  setPurchasesBadge(items.length);
+  drawPurchases();
+}
+
+function drawPurchases(){
+  const out = purchaseItems.filter(i => i.stock === 0).length;
+  const low = purchaseItems.length - out;
+  if(purchaseItems.length === 0){
+    purchasesAlertEl.innerHTML = '<div class="pur-alert ok">✅ Todo tu inventario tiene más de ' + LOW_STOCK_LIMIT + ' unidades. No hay nada por comprar.</div>';
+    purchasesListEl.innerHTML = '';
+    return;
+  }
+  purchasesAlertEl.innerHTML = `<div class="pur-alert warn">⚠️ ${purchaseItems.length} producto${purchaseItems.length === 1 ? '' : 's'} por agotarse o agotado${purchaseItems.length === 1 ? '' : 's'}: necesitas comprar nuevamente
+    <small>${low} con 1 o 2 unidades · ${out} agotado${out === 1 ? '' : 's'} (los agotados ya no se muestran en la tienda)</small></div>`;
+
+  const term = purchasesSearchEl.value.trim().toLowerCase();
+  const rows = purchaseItems.filter(i => !term || (i.name + ' ' + i.color).toLowerCase().includes(term));
+  if(rows.length === 0){
+    purchasesListEl.innerHTML = '<p class="pv-empty">No hay productos que coincidan.</p>';
+    return;
+  }
+  purchasesListEl.innerHTML = '';
+  rows.forEach(i => {
+    const row = document.createElement('div');
+    row.className = 'pur-row' + (i.stock === 0 ? ' out' : '');
+    const badge = i.stock === 0 ? 'Agotado' : (i.stock === 1 ? 'Queda 1' : 'Quedan ' + i.stock);
+    const msg = i.stock === 0
+      ? '🚫 Producto agotado: compra de inmediato para volver a mostrarlo en la tienda.'
+      : '⚠️ Producto por agotarse: necesitas comprar nuevamente.';
+    row.innerHTML = `
+      <img src="${escHtml(i.image || 'https://placehold.co/100x100/E8C5C8/3D2B1F?text=—')}" alt="">
+      <div>
+        <div class="pur-name">${escHtml(i.name)}</div>
+        <div class="pur-meta">${escHtml(i.category)}${i.color ? ` · <span class="pur-dot" style="background:${escHtml(i.hex || '#ccc')}"></span>${escHtml(i.color)}` : ''}</div>
+        <div class="pur-msg">${msg}</div>
+      </div>
+      <div class="pur-side">
+        <span class="pur-badge">${badge}</span>
+        <label class="pur-buy">Comprar <input type="number" min="0" step="1" value="${purchaseQty[i.key] || ''}" placeholder="0"></label>
+      </div>`;
+    row.querySelector('input').addEventListener('input', e => {
+      const n = Math.max(0, parseInt(e.target.value) || 0);
+      if(n > 0) purchaseQty[i.key] = n; else delete purchaseQty[i.key];
+    });
+    purchasesListEl.appendChild(row);
+  });
+}
+
+purchasesSearchEl.addEventListener('input', drawPurchases);
+
+document.getElementById('purchases-copy').addEventListener('click', async () => {
+  const lines = purchaseItems
+    .filter(i => purchaseQty[i.key] > 0)
+    .map(i => `- ${i.name}${i.color ? ' (' + i.color + ')' : ''}: comprar ${purchaseQty[i.key]} (en inventario: ${i.stock})`);
+  if(lines.length === 0){
+    purchasesMsgEl.textContent = 'Escribe en "Comprar" la cantidad de los productos que vas a pedir y luego copia la lista.';
+    purchasesMsgEl.className = 'form-msg error';
+    return;
+  }
+  const text = 'Lista de compras\n' + lines.join('\n');
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  purchasesMsgEl.textContent = '✅ Lista copiada (' + lines.length + ' producto' + (lines.length === 1 ? '' : 's') + ').';
+  purchasesMsgEl.className = 'form-msg success';
+});
+
+
+/* =========================================================
+   BANNER PROMO: ENVÍO GRATIS (cuenta regresiva de 2 horas por visitante)
+   - PROMO_ACTIVE=false lo apaga.  - Cambia PROMO_ID para lanzar una promo nueva a todos.
+   ========================================================= */
+const PROMO_ACTIVE = true;
+const PROMO_ID = 'envio-gratis-v1';
+const PROMO_CODE = 'ENVIOGRATIS01';
+const PROMO_HOURS = 2;
+const promoBarEl = document.getElementById('promo-bar');
+const promoTimerEl = document.getElementById('promo-timer');
+const shippingBannerEl = document.getElementById('shipping-banner');
+let promoEnd = 0;
+
+function promoIsActive(){ return PROMO_ACTIVE && promoEnd > Date.now(); }
+
+function promoInit(){
+  if(!PROMO_ACTIVE){ return; }
+  const key = 'promo_end_' + PROMO_ID;
+  try{
+    promoEnd = Number(localStorage.getItem(key)) || 0;
+    if(!promoEnd){ promoEnd = Date.now() + PROMO_HOURS * 3600 * 1000; localStorage.setItem(key, String(promoEnd)); }
+  }catch(e){ promoEnd = Date.now() + PROMO_HOURS * 3600 * 1000; }
+  let closed = false;
+  try{ closed = sessionStorage.getItem('promo_closed_' + PROMO_ID) === '1'; }catch(e){}
+  if(!promoIsActive()) return;          // promo terminada: solo se ve el banner normal de envíos
+  if(!closed) promoBarEl.hidden = false;
+  const tick = () => {
+    const left = promoEnd - Date.now();
+    if(left <= 0){
+      promoBarEl.hidden = true;
+      clearInterval(timerId);
+      return;
+    }
+    const h = Math.floor(left / 3600000), m = Math.floor(left % 3600000 / 60000), sec = Math.floor(left % 60000 / 1000);
+    promoTimerEl.textContent = [h, m, sec].map(n => String(n).padStart(2, '0')).join(':');
+  };
+  const timerId = setInterval(tick, 1000);
+  tick();
+}
+
+function promoToast(text){
+  const t = document.createElement('div');
+  t.className = 'promo-toast';
+  t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+document.getElementById('promo-close').addEventListener('click', () => {
+  promoBarEl.hidden = true;
+  try{ sessionStorage.setItem('promo_closed_' + PROMO_ID, '1'); }catch(e){}
+});
+document.getElementById('promo-cta').addEventListener('click', () => {
+  const target = document.getElementById('tabs');
+  window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
+});
+document.getElementById('promo-code-btn').addEventListener('click', async () => {
+  document.getElementById('coupon-code').value = PROMO_CODE;
+  try{ await navigator.clipboard.writeText(PROMO_CODE); }catch(e){}
+  promoToast('Código ' + PROMO_CODE + ' copiado. Pégalo en tu carrito.');
+});
+promoInit();
 
 </script>
 </body>
