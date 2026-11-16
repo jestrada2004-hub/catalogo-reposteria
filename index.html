@@ -1182,6 +1182,32 @@
   .photo-preview{width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid var(--parchment-dark);display:none;}
   .pv-color-row button.pv-cam,.pi-row button.pi-star{background:var(--butter);color:var(--espresso);}
 
+
+  /* ---------- GESTOR DE FOTOS (1 a 4) ---------- */
+  .ph-count{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#8a7960;margin:.2rem 0 .5rem;}
+  .ph-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.6rem;}
+  @media(max-width:600px){.ph-grid{grid-template-columns:repeat(2,1fr);}}
+  .ph-card{background:#fff;border:2px solid var(--parchment-dark);border-radius:10px;padding:.4rem;display:flex;flex-direction:column;gap:.4rem;}
+  .ph-card.main{border-color:var(--espresso);}
+  .ph-thumb{position:relative;aspect-ratio:1/1;border-radius:7px;overflow:hidden;background:var(--parchment-dark);}
+  .ph-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .ph-badge,.ph-new{position:absolute;left:4px;font-family:'Inter',sans-serif;font-size:.62rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;}
+  .ph-badge{top:4px;background:var(--espresso);color:#fff;}
+  .ph-new{bottom:4px;background:var(--butter);color:var(--espresso);}
+  .ph-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:.25rem;}
+  .ph-btns button{border:none;border-radius:6px;background:var(--parchment-dark);padding:.4rem 0;cursor:pointer;font-size:.9rem;line-height:1;}
+  .ph-btns button.danger{background:#f4d9d4;}
+  .ph-btns button.ph-spacer{visibility:hidden;pointer-events:none;}
+  .ph-urlrow{display:flex;gap:.25rem;}
+  .ph-urlrow input{flex:1;min-width:0;padding:.3rem .4rem;border:1px solid var(--parchment-dark);border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;background:var(--parchment);color:#6e5b4a;text-overflow:ellipsis;}
+  .ph-urlrow button{border:none;border-radius:5px;background:var(--butter);cursor:pointer;padding:0 .4rem;font-size:.8rem;}
+  .ph-urlrow button:disabled{opacity:.4;cursor:not-allowed;}
+  .ph-empty{aspect-ratio:1/1;border:2px dashed #cbb98d;border-radius:10px;background:transparent;color:#8a7960;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;font-family:'Inter',sans-serif;font-size:.75rem;cursor:pointer;}
+  .ph-empty span{font-size:1.5rem;}
+  .photo-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .ph-url-row{display:flex;gap:.4rem;margin-top:.6rem;}
+  .ph-url-row input{flex:1;min-width:0;padding:.5rem .7rem;border:2px solid var(--parchment-dark);border-radius:6px;font-family:'Inter',sans-serif;font-size:.82rem;}
+
   /* ---------- EDITOR DE IMÁGENES ADICIONALES ---------- */
   .pi-row{
     display:flex;
@@ -1355,13 +1381,20 @@
           </div>
 
           <div class="form-group">
-            <label for="product-image">Link de la imagen (URL)</label>
-            <input type="url" id="product-image" placeholder="https://...">
+            <label>Fotos del producto (de 1 a 4)</label>
+            <div class="ph-count" id="photo-count">0 / 4 fotos · la primera es la principal</div>
+            <div class="ph-grid" id="photo-grid"></div>
             <div class="photo-actions">
-              <button type="button" class="photo-btn" id="photo-main-cam">📷 Tomar foto</button>
-              <button type="button" class="photo-btn alt" id="photo-main-gal">🖼️ Galería</button>
-              <img id="product-image-preview" class="photo-preview" alt="">
+              <button type="button" class="photo-btn" id="photo-add-cam">📷 Tomar foto</button>
+              <button type="button" class="photo-btn alt" id="photo-add-gal">🖼️ Galería</button>
             </div>
+            <details style="margin-top:.5rem;">
+              <summary style="font-size:.78rem;color:#8a7960;cursor:pointer;">O agregar por link (URL)</summary>
+              <div class="ph-url-row">
+                <input type="url" id="photo-url-input" placeholder="https://...">
+                <button type="button" class="photo-btn" id="photo-url-add">➕</button>
+              </div>
+            </details>
           </div>
           <div class="form-group form-check">
             <input type="checkbox" id="product-instock" checked>
@@ -1383,18 +1416,6 @@
             <input type="number" id="pv-new-qty" min="0" step="1" value="0" title="Cantidad">
             <input type="url" id="pv-new-image" placeholder="URL de la foto de este color (opcional)">
             <button type="button" id="pv-add-btn">➕ Agregar color</button>
-          </div>
-
-          <!-- IMÁGENES ADICIONALES -->
-          <div class="admin-section-title">Imágenes adicionales</div>
-          <div id="product-images-list"></div>
-          <div class="pi-row">
-            <input type="url" id="pi-new-url" placeholder="https://... (URL de otra imagen)">
-            <button type="button" id="pi-add-btn" class="pi-add-btn" style="border-radius:50%;width:28px;height:28px;padding:0;">➕</button>
-          </div>
-          <div class="photo-actions" style="margin-bottom:.8rem;">
-            <button type="button" class="photo-btn" id="pi-cam-btn">📷 Tomar foto</button>
-            <button type="button" class="photo-btn alt" id="pi-gal-btn">🖼️ Elegir de galería</button>
           </div>
 
           <div class="form-actions">
@@ -2149,17 +2170,16 @@ hasOfferCheckbox.addEventListener('change', () => {
 });
 
 /* ---- Fotos con cámara: se reducen y se suben a Supabase Storage (bucket "productos", carpeta = id del producto) ---- */
-let pendingMainBlob = null;
-const mainPhotoPreviewEl = document.getElementById('product-image-preview');
-const mainImageInputEl = document.getElementById('product-image');
-mainPhotoPreviewEl.addEventListener('error', () => { mainPhotoPreviewEl.style.display = 'none'; });
+let photos = [];            // { key, id?, url, blob?, preview? } — el índice 0 es la foto principal
+let removedImageIds = [];  // filas de product_images a borrar al guardar
+const MAX_PHOTOS = 4;
+let photoKeyCounter = 0;
+const photoGridEl = document.getElementById('photo-grid');
+const photoCountEl = document.getElementById('photo-count');
+const photoCamBtn = document.getElementById('photo-add-cam');
+const photoGalBtn = document.getElementById('photo-add-gal');
 
-function showMainPreview(src){
-  if(src){ mainPhotoPreviewEl.src = src; mainPhotoPreviewEl.style.display = 'block'; }
-  else { mainPhotoPreviewEl.removeAttribute('src'); mainPhotoPreviewEl.style.display = 'none'; }
-}
-function clearMainPhoto(){ pendingMainBlob = null; showMainPreview(''); }
-mainImageInputEl.addEventListener('input', () => { pendingMainBlob = null; showMainPreview(mainImageInputEl.value.trim()); });
+function clearMainPhoto(){ photos = []; removedImageIds = []; renderPhotos(); }
 
 async function compressImage(file, maxSide = 1200, quality = 0.82){
   let bmp;
@@ -2206,41 +2226,109 @@ function pickPhoto({ capture = false, multiple = false }, onBlob){
   inp.click();
 }
 
-function setMainBlob(blob){
-  pendingMainBlob = blob;
-  mainImageInputEl.value = '';
-  showMainPreview(URL.createObjectURL(blob));
+let lastLimitAlert = 0;
+function limitAlert(){
+  const now = Date.now();
+  if(now - lastLimitAlert > 800){ lastLimitAlert = now; alert('Máximo ' + MAX_PHOTOS + ' fotos por producto. Elimina una para agregar otra.'); }
 }
-function addExtraBlob(blob){
-  pendingImages.push({ _tempId: ++tempIdCounter, image_url: '', _blob: blob, _preview: URL.createObjectURL(blob) });
-  renderPendingImages();
+function addPhotoBlob(blob){
+  if(photos.length >= MAX_PHOTOS){ limitAlert(); return; }
+  photos.push({ key: ++photoKeyCounter, url: '', blob, preview: URL.createObjectURL(blob) });
+  renderPhotos();
 }
-document.getElementById('photo-main-cam').addEventListener('click', () => pickPhoto({ capture: true }, setMainBlob));
-document.getElementById('photo-main-gal').addEventListener('click', () => pickPhoto({}, setMainBlob));
-document.getElementById('pi-cam-btn').addEventListener('click', () => pickPhoto({ capture: true }, addExtraBlob));
-document.getElementById('pi-gal-btn').addEventListener('click', () => pickPhoto({ multiple: true }, addExtraBlob));
+function addPhotoUrl(url){
+  if(photos.length >= MAX_PHOTOS){ limitAlert(); return; }
+  photos.push({ key: ++photoKeyCounter, url });
+  renderPhotos();
+}
+function replacePhotoBlob(p, blob){
+  if(p.preview) URL.revokeObjectURL(p.preview);
+  p.blob = blob; p.preview = URL.createObjectURL(blob); p.url = '';
+  renderPhotos();
+}
+function removePhoto(p){
+  if(p.id) removedImageIds.push(p.id);
+  if(p.preview) URL.revokeObjectURL(p.preview);
+  photos = photos.filter(x => x !== p);
+  renderPhotos();
+}
+function makePhotoMain(p){
+  photos = [p, ...photos.filter(x => x !== p)];
+  renderPhotos();
+}
 
-// Convierte una foto adicional en la principal (la principal actual pasa a ser adicional)
-function makeExtraMain(img){
-  const oldBlob = pendingMainBlob;
-  const oldUrl = mainImageInputEl.value.trim();
-  if(img._blob){
-    pendingMainBlob = img._blob;
-    mainImageInputEl.value = '';
-    showMainPreview(img._preview);
-  }else{
-    pendingMainBlob = null;
-    mainImageInputEl.value = img.image_url;
-    showMainPreview(img.image_url);
+function renderPhotos(){
+  photoGridEl.innerHTML = '';
+  photos.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'ph-card' + (i === 0 ? ' main' : '');
+    const src = p.blob ? p.preview : p.url;
+    card.innerHTML = `
+      <div class="ph-thumb">
+        <img src="${src}" alt="Foto ${i + 1}">
+        ${i === 0 ? '<span class="ph-badge">Principal</span>' : ''}
+        ${p.blob ? '<span class="ph-new">Nueva</span>' : ''}
+      </div>
+      <div class="ph-btns">
+        <button type="button" data-a="retake" title="Tomar de nuevo con la cámara">📷</button>
+        <button type="button" data-a="replace" title="Cambiar por otra de la galería">🖼️</button>
+        ${i > 0 ? '<button type="button" data-a="main" title="Hacer principal">⭐</button>' : '<button type="button" class="ph-spacer" tabindex="-1" aria-hidden="true">⭐</button>'}
+        <button type="button" data-a="del" class="danger" title="Eliminar esta foto">🗑</button>
+      </div>
+      <div class="ph-urlrow">
+        <input type="text" readonly aria-label="Dirección de la foto">
+        <button type="button" data-a="copy" title="Copiar dirección">📋</button>
+      </div>`;
+    const urlInp = card.querySelector('.ph-urlrow input');
+    const copyBtn = card.querySelector('[data-a="copy"]');
+    if(p.blob){
+      urlInp.value = '';
+      urlInp.placeholder = 'Se genera al guardar';
+      copyBtn.disabled = true;
+    }else{
+      urlInp.value = p.url;
+      urlInp.title = p.url;
+      urlInp.addEventListener('focus', () => urlInp.select());
+      copyBtn.addEventListener('click', async () => {
+        try{ await navigator.clipboard.writeText(p.url); }
+        catch(e){ urlInp.select(); document.execCommand('copy'); }
+        copyBtn.textContent = '✅';
+        setTimeout(() => { copyBtn.textContent = '📋'; }, 1200);
+      });
+    }
+    const img = card.querySelector('img');
+    img.addEventListener('error', () => { img.style.opacity = '.3'; });
+    card.querySelector('[data-a="retake"]').addEventListener('click', () => pickPhoto({ capture: true }, blob => replacePhotoBlob(p, blob)));
+    card.querySelector('[data-a="replace"]').addEventListener('click', () => pickPhoto({}, blob => replacePhotoBlob(p, blob)));
+    const mainBtn = card.querySelector('[data-a="main"]');
+    if(mainBtn) mainBtn.addEventListener('click', () => makePhotoMain(p));
+    card.querySelector('[data-a="del"]').addEventListener('click', () => removePhoto(p));
+    photoGridEl.appendChild(card);
+  });
+  // Espacios vacíos: al tocarlos abren la cámara
+  for(let i = photos.length; i < MAX_PHOTOS; i++){
+    const empty = document.createElement('button');
+    empty.type = 'button';
+    empty.className = 'ph-empty';
+    empty.innerHTML = '<span>📷</span>Foto ' + (i + 1);
+    empty.addEventListener('click', () => pickPhoto({ capture: true }, addPhotoBlob));
+    photoGridEl.appendChild(empty);
   }
-  if(img.id){ img._deleted = true; } else { pendingImages = pendingImages.filter(x => x !== img); }
-  if(oldBlob){
-    pendingImages.push({ _tempId: ++tempIdCounter, image_url: '', _blob: oldBlob, _preview: URL.createObjectURL(oldBlob) });
-  }else if(oldUrl){
-    pendingImages.push({ _tempId: ++tempIdCounter, image_url: oldUrl });
-  }
-  renderPendingImages();
+  const full = photos.length >= MAX_PHOTOS;
+  photoCamBtn.disabled = full;
+  photoGalBtn.disabled = full;
+  photoCountEl.textContent = photos.length + ' / ' + MAX_PHOTOS + ' fotos · la primera es la principal' + (photos.length === 0 ? ' (agrega al menos 1)' : '');
 }
+
+photoCamBtn.addEventListener('click', () => pickPhoto({ capture: true }, addPhotoBlob));
+photoGalBtn.addEventListener('click', () => pickPhoto({ multiple: true }, addPhotoBlob));
+document.getElementById('photo-url-add').addEventListener('click', () => {
+  const inp = document.getElementById('photo-url-input');
+  const url = inp.value.trim();
+  if(!url){ alert('Pega el link de la imagen.'); return; }
+  addPhotoUrl(url);
+  inp.value = '';
+});
 
 async function uploadPhoto(productId, blob, prefix){
   const path = `${productId}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.jpg`;
@@ -2251,24 +2339,19 @@ async function uploadPhoto(productId, blob, prefix){
 
 // Sube las fotos pendientes (principal, adicionales y de colores). Devuelve cuántas fallaron.
 async function uploadPendingPhotos(productId){
-  const hasAny = pendingMainBlob || pendingImages.some(i => i._blob && !i._deleted) || pendingVariants.some(v => v._blob && !v._deleted);
+  const hasAny = photos.some(p => p.blob) || pendingVariants.some(v => v._blob && !v._deleted);
   if(!hasAny) return 0;
   productMsg.textContent = 'Subiendo fotos...';
   let errors = 0;
-  if(pendingMainBlob){
+  for(const p of photos){
+    if(!p.blob) continue;
     try{
-      const url = await uploadPhoto(productId, pendingMainBlob, 'principal');
-      const { error } = await sb.from('products').update({ image_url: url }).eq('id', productId);
-      if(error) throw error;
-    }catch(err){ console.error(err); errors++; }
+      p.url = await uploadPhoto(productId, p.blob, p === photos[0] ? 'principal' : 'foto');
+      URL.revokeObjectURL(p.preview);
+      delete p.blob; delete p.preview;
+    }catch(err){ console.error(err); errors++; p._failed = true; }
   }
-  for(const img of pendingImages){
-    if(!img._blob || img._deleted) continue;
-    try{
-      img.image_url = await uploadPhoto(productId, img._blob, 'foto');
-      delete img._blob; delete img._preview;
-    }catch(err){ console.error(err); errors++; img._deleted = true; }
-  }
+  photos = photos.filter(p => !p._failed);
   for(const v of pendingVariants){
     if(!v._blob || v._deleted) continue;
     try{
@@ -2281,9 +2364,7 @@ async function uploadPendingPhotos(productId){
 
 /* ---- Colores/cantidad e imágenes pendientes dentro del formulario ---- */
 const productVariantListEl = document.getElementById('product-variant-list');
-const productImagesListEl = document.getElementById('product-images-list');
 let pendingVariants = []; // { _tempId, id?, color_name, color_hex, stock, _deleted? }
-let pendingImages = [];   // { _tempId, id?, image_url, _deleted? }
 let tempIdCounter = 0;
 
 function updateStockFieldState(){
@@ -2368,43 +2449,6 @@ document.getElementById('pv-add-btn').addEventListener('click', () => {
   renderPendingVariants();
 });
 
-function renderPendingImages(){
-  const rows = pendingImages.filter(i => !i._deleted);
-  productImagesListEl.innerHTML = '';
-  if(rows.length === 0){
-    productImagesListEl.innerHTML = '<div class="pv-empty">Sin imágenes adicionales (además de la imagen principal).</div>';
-    return;
-  }
-  rows.forEach(img => {
-    const row = document.createElement('div');
-    row.className = 'pi-row';
-    const hasBlob = !!img._blob;
-    row.innerHTML = `
-      <img src="${hasBlob ? img._preview : img.image_url}" alt="">
-      <input type="url" value="${hasBlob ? '' : img.image_url}" placeholder="${hasBlob ? '📷 Foto nueva: se sube al guardar' : 'https://...'}" ${hasBlob ? 'disabled' : ''}>
-      <button type="button" class="pi-star" title="Usar como foto principal">⭐</button>
-      <button type="button" class="pi-del" title="Quitar">🗑</button>
-    `;
-    const [thumb, urlInput] = row.querySelectorAll('img, input');
-    urlInput.addEventListener('input', () => { img.image_url = urlInput.value.trim(); thumb.src = img.image_url; });
-    row.querySelector('.pi-star').addEventListener('click', () => makeExtraMain(img));
-    row.querySelector('.pi-del').addEventListener('click', () => {
-      if(img.id){ img._deleted = true; } else { pendingImages = pendingImages.filter(x => x !== img); }
-      renderPendingImages();
-    });
-    productImagesListEl.appendChild(row);
-  });
-}
-
-document.getElementById('pi-add-btn').addEventListener('click', () => {
-  const urlInput = document.getElementById('pi-new-url');
-  const url = urlInput.value.trim();
-  if(!url){ alert('Pega el link de la imagen.'); return; }
-  pendingImages.push({ _tempId: ++tempIdCounter, image_url: url });
-  urlInput.value = '';
-  renderPendingImages();
-});
-
 function resetProductForm(){
   productForm.reset();
   document.getElementById('product-id').value = '';
@@ -2418,15 +2462,13 @@ function resetProductForm(){
   productMsg.textContent = '';
   productMsg.className = 'form-msg';
   pendingVariants = [];
-  pendingImages = [];
   clearMainPhoto();
   renderPendingVariants();
-  renderPendingImages();
 }
 
 cancelEditBtn.addEventListener('click', resetProductForm);
 
-async function saveVariantsAndImages(productId){
+async function saveVariantsAndImages(productId, photoUploadFailed = false){
   // Colores/cantidad
   for(const v of pendingVariants){
     if(v._deleted && v.id){
@@ -2437,17 +2479,25 @@ async function saveVariantsAndImages(productId){
       await sb.from('product_variants').update({ color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0, image_url: v.image_url || null }).eq('id', v.id);
     }
   }
-  // Imágenes adicionales
+  // Fotos: la primera es la principal (products.image_url); el resto va en product_images
+  for(const id of removedImageIds){
+    await sb.from('product_images').delete().eq('id', id);
+  }
+  removedImageIds = [];
+  const canSetMain = !(photos.length === 0 && photoUploadFailed);
+  if(canSetMain){
+    await sb.from('products').update({ image_url: photos[0] ? photos[0].url : '' }).eq('id', productId);
+  }
   let order = 0;
-  for(const img of pendingImages){
-    if(img._deleted && img.id){
-      await sb.from('product_images').delete().eq('id', img.id);
-    }else if(!img.id && !img._deleted){
-      await sb.from('product_images').insert({ product_id: productId, image_url: img.image_url, sort_order: order });
-    }else if(img.id && !img._deleted){
-      await sb.from('product_images').update({ image_url: img.image_url, sort_order: order }).eq('id', img.id);
+  for(let i = 0; i < photos.length; i++){
+    const p = photos[i];
+    if(i === 0){
+      if(p.id) await sb.from('product_images').delete().eq('id', p.id); // ya es la principal
+      continue;
     }
-    if(!img._deleted) order++;
+    if(p.id) await sb.from('product_images').update({ image_url: p.url, sort_order: order }).eq('id', p.id);
+    else await sb.from('product_images').insert({ product_id: productId, image_url: p.url, sort_order: order });
+    order++;
   }
   // Mantener sincronizado el estado de disponibilidad si se cargaron colores con cantidad
   const total = pendingVariants.filter(v => !v._deleted).reduce((sum, v) => sum + (v.stock || 0), 0);
@@ -2474,7 +2524,7 @@ productForm.addEventListener('submit', async (e) => {
     description: document.getElementById('product-desc').value.trim(),
     price: parseFloat(document.getElementById('product-price').value) || 0,
     category: parseInt(document.getElementById('product-category').value) || null,
-    image_url: document.getElementById('product-image').value.trim(),
+    image_url: (photos[0] && !photos[0].blob) ? photos[0].url : '',
     in_stock: document.getElementById('product-instock').checked,
     offer_enabled: offerEnabled,
     offer_price: offerEnabled ? offerPriceVal : null,
@@ -2485,8 +2535,13 @@ productForm.addEventListener('submit', async (e) => {
     payload.stock = Math.max(0, parseInt(document.getElementById('product-stock').value) || 0);
   }
 
+  if(photos.length === 0){
+    productMsg.textContent = 'Agrega al menos 1 foto del producto.';
+    productMsg.className = 'form-msg error';
+    return;
+  }
   // Si hay una foto nueva como principal, el link se guarda después de subirla
-  if(pendingMainBlob){
+  if(photos[0] && photos[0].blob){
     if(id){ delete payload.image_url; } else { payload.image_url = ''; }
   }
 
@@ -2513,7 +2568,7 @@ productForm.addEventListener('submit', async (e) => {
   let photoErrors = 0;
   if(productId){
     photoErrors = await uploadPendingPhotos(productId);
-    await saveVariantsAndImages(productId);
+    await saveVariantsAndImages(productId, photoErrors > 0);
   }
 
   productSubmitBtn.disabled = false;
@@ -2535,9 +2590,9 @@ async function fillFormForEdit(p){
   document.getElementById('product-desc').value = p.description || '';
   document.getElementById('product-price').value = p.price || 0;
   document.getElementById('product-category').value = p.category || '';
-  document.getElementById('product-image').value = p.image_url || '';
   clearMainPhoto();
-  showMainPreview(p.image_url || '');
+  if(p.image_url) photos.push({ key: ++photoKeyCounter, url: p.image_url });
+  renderPhotos();
   document.getElementById('product-instock').checked = p.in_stock !== false;
   document.getElementById('product-stock').value = p.stock != null ? p.stock : 1;
   hasOfferCheckbox.checked = !!p.offer_enabled;
@@ -2548,9 +2603,7 @@ async function fillFormForEdit(p){
   productMsg.textContent = '';
 
   pendingVariants = [];
-  pendingImages = [];
   productVariantListEl.innerHTML = '<div class="pv-empty">Cargando...</div>';
-  productImagesListEl.innerHTML = '<div class="pv-empty">Cargando...</div>';
 
   const [{ data: variants }, { data: images }] = await Promise.all([
     sb.from('product_variants').select('*').eq('product_id', p.id).order('color_name', {ascending:true}),
@@ -2558,9 +2611,12 @@ async function fillFormForEdit(p){
   ]);
 
   pendingVariants = (variants || []).map(v => ({ id: v.id, color_name: v.color_name, color_hex: v.color_hex, stock: v.stock || 0, image_url: v.image_url || '' }));
-  pendingImages = (images || []).map(i => ({ id: i.id, image_url: i.image_url }));
+  (images || []).forEach(i => {
+    if(!i.image_url || photos.some(x => x.url === i.image_url) || photos.length >= MAX_PHOTOS) return;
+    photos.push({ key: ++photoKeyCounter, id: i.id, url: i.image_url });
+  });
   renderPendingVariants();
-  renderPendingImages();
+  renderPhotos();
 
   productForm.scrollIntoView({behavior:'smooth', block:'start'});
 }
