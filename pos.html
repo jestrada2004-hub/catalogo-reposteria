@@ -702,13 +702,13 @@ async function uploadPdfToStorage(doc, folder, fileName) {
       upsert: true
     });
     if (error) {
-      console.warn('No se pudo subir el PDF al Storage:', error.message);
+      alert(`⚠️ No se pudo generar el link de descarga en Supabase Storage (${error.message}).\n\nVerifica haber ejecutado el SQL del bucket "${PDF_BUCKET}".`);
       return null;
     }
     const { data } = sb.storage.from(PDF_BUCKET).getPublicUrl(storagePath);
     return data?.publicUrl || null;
   } catch (err) {
-    console.warn('Error generando enlace PDF:', err);
+    alert(`⚠️ Error inesperado subiendo PDF: ${err.message}`);
     return null;
   }
 }
@@ -774,8 +774,9 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
     return;
   }
 
+  const itemsCopy = [...bill];
   const fileName = `Cotizacion-${data.id}-${cliente.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
-  const doc = buildCotizacionDoc(data.id, cliente, telefono, [...bill], sub, desc, total, currentUsername);
+  const doc = buildCotizacionDoc(data.id, cliente, telefono, itemsCopy, sub, desc, total, currentUsername);
   doc.save(fileName);
 
   const pdfUrl = await uploadPdfToStorage(doc, 'cotizaciones', fileName);
@@ -785,21 +786,14 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
 
   const waPhone = formatPhoneHN(telefono);
   if (waPhone) {
-    const lineas = bill.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('
-');
-    const linkTxt = pdfUrl ? `
-
-📄 *Descarga tu cotización en PDF aquí:*
-${pdfUrl}` : '';
-    const msg = `¡Hola ${cliente}! Te compartimos tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:
-
-${lineas}
-
-*Total Estimado: ${money(total)}*${linkTxt}`;
+    const lineas = itemsCopy.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
+    const linkTxt = pdfUrl ? `\n\n📄 *Descarga tu cotización en PDF aquí:*\n${pdfUrl}` : '';
+    const msg = `¡Hola ${cliente}! Te compartimos tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total Estimado: ${money(total)}*${linkTxt}`;
     window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  } else {
+    alert(`¡Cotización #${data.id} guardada!${pdfUrl ? '\nEnlace PDF listo.' : ''}\n(No ingresaste número de celular para enviar por WhatsApp).`);
   }
 
-  alert(`¡Cotización #${data.id} guardada!${pdfUrl ? ' Enlace PDF listo.' : ''}`);
   bill = [];
   document.getElementById('cliente-nombre').value = 'Consumidor Final';
   document.getElementById('cliente-telefono').value = '';
@@ -885,19 +879,12 @@ document.getElementById('btn-facturar').addEventListener('click', async () => {
 
   const waPhone = formatPhoneHN(telefono);
   if (waPhone) {
-    const lineas = itemsCopy.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('
-');
-    const linkTxt = pdfUrl ? `
-
-📄 *Descarga tu factura en PDF aquí:*
-${pdfUrl}` : '';
-    const msg = `¡Hola ${cliente}! Gracias por tu compra en *${BUSINESS_NAME}*.
-
-*Factura #${data.id}*
-${lineas}
-
-*Total pagado: ${money(total)}*${linkTxt}`;
+    const lineas = itemsCopy.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
+    const linkTxt = pdfUrl ? `\n\n📄 *Descarga tu factura en PDF aquí:*\n${pdfUrl}` : '';
+    const msg = `¡Hola ${cliente}! Gracias por tu compra en *${BUSINESS_NAME}*.\n\n*Factura #${data.id}*\n${lineas}\n\n*Total pagado: ${money(total)}*${linkTxt}`;
     window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  } else {
+    alert(`¡Factura #${data.id} emitida! Inventario actualizado.${pdfUrl ? '\nPDF guardado en la nube.' : ''}`);
   }
 
   bill = [];
@@ -906,7 +893,6 @@ ${lineas}
   document.getElementById('input-descuento').value = '0';
   renderBill(); renderProductList();
   btn.textContent = '✅ Facturar';
-  alert(`¡Factura #${data.id} emitida! Inventario actualizado.${pdfUrl ? ' PDF guardado en la nube.' : ''}`);
 });
 
 // --- PESTAÑA: COTIZACIONES GUARDADAS ---
@@ -963,17 +949,9 @@ async function loadQuotes() {
           if (linkUrl) await sb.from('cotizaciones').update({ pdf_url: linkUrl }).eq('id', q.id);
         }
         const waPhone = formatPhoneHN(q.cliente_telefono);
-        const lineas = (q.detalle_cotizaciones || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('
-');
-        const linkTxt = linkUrl ? `
-
-📄 *Ver PDF:*
-${linkUrl}` : '';
-        const msg = `Hola ${q.cliente_nombre}, te recordamos tu cotización en *${BUSINESS_NAME}*:
-
-${lineas}
-
-*Total: ${money(q.total)}*${linkTxt}`;
+        const lineas = (q.detalle_cotizaciones || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('\n');
+        const linkTxt = linkUrl ? `\n\n📄 *Descarga tu cotización en PDF aquí:*\n${linkUrl}` : '';
+        const msg = `Hola ${q.cliente_nombre}, te recordamos tu cotización en *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total: ${money(q.total)}*${linkTxt}`;
         window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
       };
     }
@@ -1065,17 +1043,9 @@ async function loadSalesReport() {
           if (linkUrl) await sb.from('ventas').update({ pdf_url: linkUrl }).eq('id', v.id);
         }
         const waPhone = formatPhoneHN(v.cliente_telefono);
-        const lineas = (v.detalle_ventas || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('
-');
-        const linkTxt = linkUrl ? `
-
-📄 *Descarga tu factura en PDF aquí:*
-${linkUrl}` : '';
-        const msg = `Hola ${v.cliente_nombre}, te compartimos el detalle de tu *Factura #${v.id}*:
-
-${lineas}
-
-*Total: ${money(v.total)}*${linkTxt}`;
+        const lineas = (v.detalle_ventas || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('\n');
+        const linkTxt = linkUrl ? `\n\n📄 *Descarga tu factura en PDF aquí:*\n${linkUrl}` : '';
+        const msg = `Hola ${v.cliente_nombre}, te compartimos el detalle de tu *Factura #${v.id}*:\n\n${lineas}\n\n*Total: ${money(v.total)}*${linkTxt}`;
         window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
       };
     }
@@ -1091,8 +1061,7 @@ ${lineas}
 }
 
 async function voidSale(venta) {
-  if (!confirm(`¿ANULAR Factura #${venta.id}?
-El inventario se devolverá.`)) return;
+  if (!confirm(`¿ANULAR Factura #${venta.id}?\nEl inventario se devolverá.`)) return;
   const { error } = await sb.rpc('anular_venta_pos', { p_venta_id: venta.id });
   if (error) return alert('Error: ' + error.message);
   alert('Factura anulada e inventario restaurado.');
