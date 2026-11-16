@@ -190,7 +190,6 @@
   </div>
 </header>
 
-<!-- VISTA 1: PUNTO DE VENTA -->
 <div class="container view active" id="view-pos">
   <div class="card">
     <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:.6rem; margin-bottom:.6rem;">
@@ -243,16 +242,14 @@
   </div>
 </div>
 
-<!-- VISTA 2: COTIZACIONES -->
 <div class="container view" id="view-quotes">
   <div class="card">
-    <label>Cotizaciones guardadas</label>
+    <label>Cotizaciones guardadas (Se eliminan solas a los 30 días)</label>
     <p style="font-size:.78rem;color:#7a6855;margin-top:.2rem;">Cuentas guardadas para clientes que regresarán más tarde.</p>
   </div>
   <div id="quotes-list">Cargando cotizaciones...</div>
 </div>
 
-<!-- VISTA 3: REPORTE DE VENTAS -->
 <div class="container view" id="view-report">
   <div class="card" style="display:flex; gap:.5rem; align-items:flex-end;">
     <div style="flex:1;">
@@ -270,7 +267,6 @@
   <div id="sales-report-list">Cargando ventas...</div>
 </div>
 
-<!-- MODAL: VISTA PREVIA -->
 <div class="modal" id="modal-preview">
   <div class="modal-content">
     <h3>Vista Previa de Factura</h3>
@@ -282,7 +278,6 @@
   </div>
 </div>
 
-<!-- MODAL: PRODUCTO MANUAL -->
 <div class="modal" id="modal-manual">
   <div class="modal-content">
     <h3>Producto no en sistema</h3>
@@ -301,7 +296,6 @@
   </div>
 </div>
 
-<!-- MODAL: EDITAR FACTURA -->
 <div class="modal" id="modal-edit-sale">
   <div class="modal-content">
     <h3>Editar Factura #<span id="edit-sale-id"></span></h3>
@@ -319,13 +313,12 @@
   </div>
 </div>
 
-<!-- MODAL: LOGIN -->
 <div class="modal" id="modal-login">
   <div class="modal-content">
     <h3>Iniciar Sesión POS</h3>
     <p style="font-size:.8rem; color:#7a6855; margin-bottom:1rem;">Usa tu usuario (ej. <strong>jestrada</strong> o <strong>avindel</strong>) y contraseña.</p>
     <form id="login-form">
-      <div style="margin-bottom:.7rem;"><label>Usuario o Correo</label><input type="text" id="login-email" placeholder="ej. jestrada o jestrada@pos.local" required></div>
+      <div style="margin-bottom:.7rem;"><label>Usuario o Correo</label><input type="text" id="login-email" placeholder="ej. jestrada" required></div>
       <div style="margin-bottom:1rem;"><label>Contraseña</label><input type="password" id="login-pass" required></div>
       <button type="submit" style="width:100%; padding:.8rem; background:var(--espresso); color:var(--butter); border:none; border-radius:8px; font-weight:700;">Entrar</button>
       <p id="login-err" style="color:var(--brick); font-size:.8rem; margin-top:.5rem;"></p>
@@ -372,10 +365,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   let email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-pass').value;
 
-  // Permite escribir solo "jestrada" o "avindel" y autocompleta el dominio interno
-  if (!email.includes('@')) {
-    email = email + '@pos.local';
-  }
+  if (!email.includes('@')) email = email + '@pos.local';
 
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
@@ -409,24 +399,15 @@ async function loadInventoryFast(forceAlert = false) {
   const statusEl = document.getElementById('sync-status');
   const cached = localStorage.getItem(CACHE_KEY);
   if (cached) {
-    try {
-      catalogItems = JSON.parse(cached);
-      renderProductList();
-      statusEl.textContent = '· Actualizando...';
-    } catch (e) {}
-  } else {
-    statusEl.textContent = '· Cargando...';
-  }
+    try { catalogItems = JSON.parse(cached); renderProductList(); statusEl.textContent = '· Actualizando...'; } catch (e) {}
+  } else { statusEl.textContent = '· Cargando...'; }
 
   const [{ data: products, error: pErr }, { data: variants, error: vErr }] = await Promise.all([
     sb.from('products').select('id, name, price, offer_enabled, offer_price, stock, image_url').order('name'),
     sb.from('product_variants').select('id, product_id, color_name, stock, image_url').order('color_name')
   ]);
 
-  if (pErr || vErr) {
-    statusEl.textContent = '· Sin conexión';
-    return;
-  }
+  if (pErr || vErr) { statusEl.textContent = '· Sin conexión'; return; }
 
   const varsByProd = {};
   (variants || []).forEach(v => {
@@ -516,9 +497,7 @@ function addProductToBill(item) {
     if (!confirm(`"${item.descripcion}" tiene 0 en stock. ¿Agregarlo de todas formas?`)) return;
   }
   const existing = bill.find(b => b.key === item.key);
-  if (existing) {
-    existing.cantidad++;
-  } else {
+  if (existing) { existing.cantidad++; } else {
     bill.push({
       key: item.key, producto_id: item.producto_id, variant_id: item.variant_id,
       descripcion: item.descripcion, precio_original: item.precio, precio_unitario: item.precio,
@@ -575,22 +554,12 @@ function renderBill() {
     row.className = 'bill-item';
     row.innerHTML = `
       <div class="bill-top">
-        <div class="bill-title">
-          ${item.descripcion}
-          ${itemDisc > 0 ? `<span class="disc-badge">Desc: -${money(itemDisc)}</span>` : ''}
-        </div>
+        <div class="bill-title">${item.descripcion} ${itemDisc > 0 ? `<span class="disc-badge">Desc: -${money(itemDisc)}</span>` : ''}</div>
         <strong style="font-family:'IBM Plex Mono',monospace;font-size:.9rem;">${money(item.precio_unitario * item.cantidad)}</strong>
       </div>
       <div class="bill-bottom">
-        <div class="price-edit-box">
-          <span>Precio L.</span>
-          <input type="number" step="0.01" min="0" value="${item.precio_unitario}">
-        </div>
-        <div class="qty-ctrl">
-          <button class="qty-btn" data-d="-1">−</button>
-          <span class="qty-val">${item.cantidad}</span>
-          <button class="qty-btn" data-d="1">+</button>
-        </div>
+        <div class="price-edit-box"><span>Precio L.</span><input type="number" step="0.01" min="0" value="${item.precio_unitario}"></div>
+        <div class="qty-ctrl"><button class="qty-btn" data-d="-1">−</button><span class="qty-val">${item.cantidad}</span><button class="qty-btn" data-d="1">+</button></div>
       </div>
     `;
 
@@ -601,11 +570,7 @@ function renderBill() {
       renderBill();
     });
 
-    row.querySelector('[data-d="-1"]').onclick = () => {
-      item.cantidad--;
-      if (item.cantidad <= 0) bill.splice(idx, 1);
-      renderBill();
-    };
+    row.querySelector('[data-d="-1"]').onclick = () => { item.cantidad--; if (item.cantidad <= 0) bill.splice(idx, 1); renderBill(); };
     row.querySelector('[data-d="1"]').onclick = () => { item.cantidad++; renderBill(); };
     listEl.appendChild(row);
   });
@@ -631,11 +596,7 @@ document.getElementById('btn-preview').addEventListener('click', () => {
   const metodo = document.getElementById('metodo-pago').value;
   const { sub, desc, total } = updateTotals();
 
-  const itemsHtml = bill.map(i => `
-    <div class="ticket-row">
-      <span>${i.cantidad} x ${i.descripcion}</span>
-      <span>${money(i.cantidad * i.precio_unitario)}</span>
-    </div>`).join('');
+  const itemsHtml = bill.map(i => `<div class="ticket-row"><span>${i.cantidad} x ${i.descripcion}</span><span>${money(i.cantidad * i.precio_unitario)}</span></div>`).join('');
 
   document.getElementById('preview-ticket-body').innerHTML = `
     <div class="ticket-center"><strong>${BUSINESS_NAME}</strong><br><span>VISTA PREVIA</span><br><span>${new Date().toLocaleString('es-HN')}</span></div>
@@ -664,6 +625,7 @@ function formatPhoneHN(raw) {
   return digits.length === 8 ? '504' + digits : digits;
 }
 
+// --- COTIZAR CON SUBIDA DE PDF A SUPABASE STORAGE ---
 document.getElementById('btn-cotizacion').addEventListener('click', async () => {
   if (!bill.length) return;
   const cliente = document.getElementById('cliente-nombre').value.trim() || 'Consumidor Final';
@@ -671,7 +633,7 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
   const { sub, desc, total } = updateTotals();
 
   const btn = document.getElementById('btn-cotizacion');
-  btn.disabled = true; btn.textContent = 'Guardando...';
+  btn.disabled = true; btn.textContent = 'Subiendo PDF...';
 
   const { data, error } = await sb.rpc('guardar_cotizacion_pos', {
     p_cliente_nombre: cliente,
@@ -687,16 +649,31 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
     return;
   }
 
-  generarCotizacionPDF(data.id, cliente, telefono, [...bill], sub, desc, total);
+  // Generar Blob del PDF y subir a Supabase Storage
+  try {
+    const pdfBlob = generarCotizacionBlob(data.id, cliente, telefono, [...bill], sub, desc, total);
+    const fileName = `Cotizacion-${data.id}-${cliente.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    
+    const { error: uploadErr } = await sb.storage.from('facturas').upload(fileName, pdfBlob, { upsert: true, contentType: 'application/pdf' });
+    
+    let publicUrl = '';
+    if (!uploadErr) {
+      const { data: urlData } = sb.storage.from('facturas').getPublicUrl(fileName);
+      publicUrl = urlData.publicUrl;
+    }
 
-  const waPhone = formatPhoneHN(telefono);
-  if (waPhone) {
-    const lineas = bill.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
-    const msg = `¡Hola ${cliente}! Adjunto tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total Estimado: ${money(total)}*`;
-    window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    const waPhone = formatPhoneHN(telefono);
+    if (waPhone) {
+      const lineas = bill.map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.cantidad * i.precio_unitario)}`).join('\n');
+      let msg = `¡Hola ${cliente}! Adjunto tu *Cotización #${data.id}* de *${BUSINESS_NAME}*:\n\n${lineas}\n\n*Total Estimado: ${money(total)}*`;
+      if (publicUrl) msg += `\n\n📄 Descarga tu PDF oficial aquí:\n${publicUrl}`;
+      window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  } catch (e) {
+    console.log('Error generando/subiendo PDF:', e);
   }
 
-  alert(`¡Cotización #${data.id} guardada y PDF descargado!`);
+  alert(`¡Cotización #${data.id} guardada (expira en 30 días)!`);
   bill = [];
   document.getElementById('cliente-nombre').value = 'Consumidor Final';
   document.getElementById('cliente-telefono').value = '';
@@ -705,7 +682,7 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
   btn.disabled = false; btn.textContent = '💬 Cotizar';
 });
 
-function generarCotizacionPDF(cotId, cliente, telefono, items, sub, desc, total) {
+function generarCotizacionBlob(cotId, cliente, telefono, items, sub, desc, total) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ format: [80, 190], unit: 'mm' });
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
@@ -730,9 +707,10 @@ function generarCotizacionPDF(cotId, cliente, telefono, items, sub, desc, total)
   if (desc > 0) { y += 4; doc.text(`Descuento: -${money(desc)}`, 75, y, { align: 'right' }); }
   y += 5; doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   doc.text(`TOTAL: ${money(total)}`, 75, y, { align: 'right' });
-  doc.save(`Cotizacion-${cotId}-${cliente.replace(/\s+/g, '_')}.pdf`);
+  return doc.output('blob');
 }
 
+// --- FACTURAR ---
 document.getElementById('btn-facturar').addEventListener('click', async () => {
   if (!bill.length) return;
   const btn = document.getElementById('btn-facturar');
@@ -834,13 +812,36 @@ async function loadQuotes() {
       <div class="sale-meta">${new Date(q.fecha).toLocaleString('es-HN')} · Creado por: <strong>${creador}</strong> ${q.cliente_telefono ? '· 📱 ' + q.cliente_telefono : ''}</div>
       <div class="sale-items">${itemsTxt}</div>
       <div class="sale-actions">
-        <button type="button" class="btn-sm btn-pdf">📄 PDF</button>
+        <button type="button" class="btn-sm btn-pdf">📄 Descargar PDF</button>
         ${q.cliente_telefono ? '<button type="button" class="btn-sm btn-wa">💬 WhatsApp</button>' : ''}
         <button type="button" class="btn-sm btn-load">🛒 Cargar a Caja</button>
       </div>
     `;
 
-    card.querySelector('.btn-pdf').onclick = () => generarCotizacionPDF(q.id, q.cliente_nombre, q.cliente_telefono, q.detalle_cotizaciones || [], q.subtotal, q.descuento, q.total);
+    card.querySelector('.btn-pdf').onclick = () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ format: [80, 190], unit: 'mm' });
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+      doc.text(BUSINESS_NAME, 40, 10, { align: 'center' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text(`COTIZACIÓN #${q.id}`, 40, 15, { align: 'center' });
+      doc.text(new Date(q.fecha).toLocaleString('es-HN'), 40, 19, { align: 'center' });
+      doc.text(`Cliente: ${q.cliente_nombre}`, 5, 25);
+      let sy = 29;
+      if (q.cliente_telefono) { doc.text(`Tel: ${q.cliente_telefono}`, 5, sy); sy += 4; }
+      doc.autoTable({
+        startY: sy + 2, margin: { left: 4, right: 4 }, styles: { fontSize: 7, cellPadding: 1 },
+        head: [['Cant', 'Producto', 'Total']],
+        body: (q.detalle_cotizaciones || []).map(i => [i.cantidad, i.descripcion, money(i.subtotal)]),
+        theme: 'plain'
+      });
+      let y = doc.lastAutoTable.finalY + 5;
+      doc.text(`Subtotal: ${money(q.subtotal)}`, 75, y, { align: 'right' });
+      if (Number(q.descuento) > 0) { y += 4; doc.text(`Descuento: -${money(q.descuento)}`, 75, y, { align: 'right' }); }
+      y += 5; doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+      doc.text(`TOTAL: ${money(q.total)}`, 75, y, { align: 'right' });
+      doc.save(`Cotizacion-${q.id}-${q.cliente_nombre.replace(/\s+/g, '_')}.pdf`);
+    };
     
     const waBtn = card.querySelector('.btn-wa');
     if (waBtn) {
@@ -926,7 +927,7 @@ async function loadSalesReport() {
       waBtn.onclick = () => {
         const waPhone = formatPhoneHN(v.cliente_telefono);
         const lineas = (v.detalle_ventas || []).map(i => `• ${i.cantidad}x ${i.descripcion}: ${money(i.subtotal)}`).join('\n');
-        const msg = `Hola ${q.cliente_nombre}, te compartimos el detalle de tu *Factura #${v.id}*:\n\n${lineas}\n\n*Total: ${money(v.total)}*`;
+        const msg = `Hola ${v.cliente_nombre}, te compartimos el detalle de tu *Factura #${v.id}*:\n\n${lineas}\n\n*Total: ${money(v.total)}*`;
         window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
       };
     }
@@ -964,6 +965,7 @@ function renderEditSaleItems() {
   const container = document.getElementById('edit-sale-items');
   const items = currentEditingSale.detalle_ventas || [];
   container.innerHTML = '';
+  items.items = items;
   items.forEach(det => {
     const row = document.createElement('div');
     row.className = 'edit-det-row';
