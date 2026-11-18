@@ -425,7 +425,8 @@
 const SUPABASE_URL = 'https://cceyeoextdoqhqacnban.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_mAlRUydh4f-tJIF--U-Hrg_YAo-8kD1';
 const BUSINESS_NAME = 'Utensilios de Repostería y Más';
-const AUTH_DOMAIN = '@pos.utensilios.local';
+// Dominios con los que se completa el usuario (se prueban en orden)
+const AUTH_DOMAINS = ['@pos.local', '@pos.utensilios.local'];
 const PDF_BUCKET = 'documentos_pos';
 const CACHE_KEY = 'pos_catalog_cache_v1';
 const PAGE_SIZE = 30;
@@ -466,9 +467,13 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const rawUser = document.getElementById('login-user').value.trim().toLowerCase();
   const password = document.getElementById('login-pass').value;
-  const email = rawUser.includes('@') ? rawUser : `${rawUser}${AUTH_DOMAIN}`;
+  const candidates = rawUser.includes('@') ? [rawUser] : AUTH_DOMAINS.map(d => `${rawUser}${d}`);
 
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  let data = null, error = null;
+  for (const email of candidates) {
+    ({ data, error } = await sb.auth.signInWithPassword({ email, password }));
+    if (!error) break;
+  }
   if (error) {
     document.getElementById('login-err').textContent = 'Usuario o contraseña incorrectos.';
     return;
