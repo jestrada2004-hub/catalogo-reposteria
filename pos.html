@@ -178,6 +178,40 @@
     padding: .45rem; background: #fff; border: 1px solid var(--parchment-dark);
     border-radius: 6px; margin-bottom: .4rem; font-size: .82rem;
   }
+
+  /* Cuentas en espera */
+  .btn-hold {
+    width: 100%; margin-top: .5rem; padding: .65rem; background: transparent;
+    border: 2px dashed var(--butter); color: var(--espresso); border-radius: 10px;
+    font-weight: 700; font-size: .82rem; cursor: pointer;
+  }
+  .btn-hold:disabled { opacity: .45; cursor: not-allowed; }
+  .hold-tab {
+    display: none; position: fixed; right: 0; top: 45%; z-index: 40;
+    background: var(--espresso); color: var(--butter); border: none;
+    border-radius: 12px 0 0 12px; padding: .7rem .6rem .7rem .7rem;
+    box-shadow: -2px 2px 12px rgba(0,0,0,.25); cursor: pointer;
+    flex-direction: column; align-items: center; gap: .15rem;
+    font-size: 1.15rem; line-height: 1;
+  }
+  .hold-tab.show { display: flex; }
+  .hold-tab .hold-count {
+    background: var(--brick); color: #fff; border-radius: 999px; min-width: 22px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: .75rem; font-weight: 700; padding: 0 .35rem;
+  }
+  .hold-tab .hold-lbl { font-size: .55rem; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; color: var(--parchment); }
+  .hold-tab.pulse { animation: holdPulse .7s ease 2; }
+  @keyframes holdPulse { 50% { transform: translateX(-6px) scale(1.06); } }
+  .hold-card { background: #fff; border: 1px solid var(--parchment-dark); border-radius: 10px; padding: .75rem; margin-bottom: .6rem; }
+  .hold-name { font-weight: 700; font-size: .95rem; }
+  .hold-meta { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #7a6855; margin: .2rem 0 .5rem; }
+  .hold-tag { background: var(--butter); color: var(--espresso); font-size: .62rem; padding: .1rem .4rem; border-radius: 4px; margin-left: .3rem; }
+  .toast {
+    position: fixed; left: 50%; bottom: 95px; transform: translateX(-50%);
+    background: var(--espresso); color: var(--parchment); padding: .6rem 1rem;
+    border-radius: 999px; font-size: .82rem; z-index: 200; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  }
 </style>
 </head>
 <body>
@@ -250,6 +284,7 @@
       <button type="button" class="btn-action btn-quote" id="btn-cotizacion" disabled>💬 Cotizar</button>
       <button type="button" class="btn-action btn-cobrar" id="btn-facturar" disabled>✅ Facturar</button>
     </div>
+    <button type="button" class="btn-hold" id="btn-hold" disabled>⏸ Guardar para continuar después</button>
   </div>
 </div>
 
@@ -289,6 +324,35 @@
       <button type="button" id="btn-close-preview" style="padding:.75rem; background:var(--parchment-dark); border:none; border-radius:8px; font-weight:600;">Seguir editando</button>
       <button type="button" id="btn-confirm-from-preview" style="padding:.75rem; background:var(--green); color:#fff; border:none; border-radius:8px; font-weight:700;">✅ Confirmar</button>
     </div>
+  </div>
+</div>
+
+<!-- PESTAÑA LATERAL: CUENTAS EN ESPERA -->
+<button type="button" class="hold-tab" id="hold-tab" title="Cuentas pendientes por continuar">
+  <span>🕒</span><span class="hold-count" id="hold-count">0</span><span class="hold-lbl">Pend.</span>
+</button>
+
+<!-- MODAL: GUARDAR CUENTA EN ESPERA -->
+<div class="modal" id="modal-hold-save">
+  <div class="modal-content">
+    <h3>Guardar para después</h3>
+    <div style="margin-bottom:1rem;">
+      <label for="hold-name-input">Nombre para identificarla</label>
+      <input type="text" id="hold-name-input" placeholder="Ej. Pedido de María - torta">
+    </div>
+    <div style="display:flex; gap:.5rem;">
+      <button type="button" id="btn-hold-save" style="flex:1; padding:.75rem; background:var(--espresso); color:var(--butter); border:none; border-radius:8px; font-weight:700;">Guardar</button>
+      <button type="button" id="btn-hold-save-cancel" style="padding:.75rem 1rem; background:var(--parchment-dark); border:none; border-radius:8px;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: LISTA DE CUENTAS EN ESPERA -->
+<div class="modal" id="modal-hold-list">
+  <div class="modal-content">
+    <h3>🕒 Pendientes por continuar</h3>
+    <div id="hold-list"></div>
+    <button type="button" id="btn-hold-list-close" style="width:100%; padding:.75rem; background:var(--parchment-dark); border:none; border-radius:8px; font-weight:600; margin-top:.3rem;">Cerrar</button>
   </div>
 </div>
 
@@ -385,6 +449,7 @@ function extractUsername(email) {
 function setLoggedUser(session) {
   currentUsername = extractUsername(session?.user?.email);
   document.getElementById('active-user-badge').textContent = `👤 ${currentUsername}`;
+  if (typeof refreshHoldBadge === 'function') refreshHoldBadge();
 }
 
 async function initAuth() {
@@ -601,6 +666,7 @@ function renderBill() {
   document.getElementById('btn-facturar').disabled = !hasItems;
   document.getElementById('btn-preview').disabled = !hasItems;
   document.getElementById('btn-cotizacion').disabled = !hasItems;
+  document.getElementById('btn-hold').disabled = !hasItems;
 
   if (!hasItems) {
     listEl.innerHTML = '<p style="font-size:.85rem;color:#8a7960;text-align:center;">Toca un producto arriba para agregarlo.</p>';
@@ -731,6 +797,135 @@ async function uploadPdfToStorage(doc, folder, fileName) {
   }
 }
 
+
+// --- CUENTAS EN ESPERA (guardadas en este dispositivo, por usuario) ---
+let activeHoldId = null;
+const holdKey = () => `pos_holds_${currentUsername}`;
+const escHtml = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+function getHolds() {
+  try { return JSON.parse(localStorage.getItem(holdKey())) || []; } catch (e) { return []; }
+}
+function setHolds(list) {
+  try { localStorage.setItem(holdKey(), JSON.stringify(list)); } catch (e) { alert('No se pudo guardar en este dispositivo.'); }
+  refreshHoldBadge();
+}
+function holdTotal(h) {
+  const sub = h.items.reduce((s, i) => s + i.precio_unitario * i.cantidad, 0);
+  return Math.max(0, sub - (Number(h.descuento) || 0));
+}
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+function refreshHoldBadge(pulse = false) {
+  const n = getHolds().length;
+  const tab = document.getElementById('hold-tab');
+  document.getElementById('hold-count').textContent = n;
+  tab.classList.toggle('show', n > 0);
+  if (pulse && n > 0) { tab.classList.remove('pulse'); void tab.offsetWidth; tab.classList.add('pulse'); }
+}
+function finishActiveHold() {
+  if (!activeHoldId) return;
+  setHolds(getHolds().filter(h => h.id !== activeHoldId));
+  activeHoldId = null;
+}
+function resetCart() {
+  bill = [];
+  document.getElementById('cliente-nombre').value = 'Consumidor Final';
+  document.getElementById('cliente-telefono').value = '';
+  document.getElementById('metodo-pago').value = 'Efectivo';
+  document.getElementById('input-descuento').value = '0';
+  renderBill();
+}
+
+const modalHoldSave = document.getElementById('modal-hold-save');
+const modalHoldList = document.getElementById('modal-hold-list');
+
+document.getElementById('btn-hold').onclick = () => {
+  if (!bill.length) return;
+  const holds = getHolds();
+  const existing = activeHoldId ? holds.find(h => h.id === activeHoldId) : null;
+  const cliente = document.getElementById('cliente-nombre').value.trim();
+  const suggested = existing ? existing.nombre : (cliente && cliente !== 'Consumidor Final' ? cliente : '');
+  document.getElementById('hold-name-input').value = suggested;
+  modalHoldSave.classList.add('open');
+  document.getElementById('hold-name-input').focus();
+};
+document.getElementById('btn-hold-save-cancel').onclick = () => modalHoldSave.classList.remove('open');
+
+document.getElementById('btn-hold-save').onclick = () => {
+  const nombre = document.getElementById('hold-name-input').value.trim();
+  if (!nombre) return alert('Escribe un nombre para identificar esta cuenta.');
+  const holds = getHolds();
+  const data = {
+    id: activeHoldId || ('h' + Date.now()),
+    nombre,
+    cliente: document.getElementById('cliente-nombre').value.trim() || 'Consumidor Final',
+    telefono: document.getElementById('cliente-telefono').value.trim(),
+    metodo: document.getElementById('metodo-pago').value,
+    descuento: Math.max(0, parseFloat(document.getElementById('input-descuento').value) || 0),
+    items: JSON.parse(JSON.stringify(bill)),
+    fecha: new Date().toISOString()
+  };
+  const idx = holds.findIndex(h => h.id === data.id);
+  if (idx >= 0) holds[idx] = data; else holds.push(data);
+  activeHoldId = null;
+  setHolds(holds);
+  modalHoldSave.classList.remove('open');
+  resetCart();
+  refreshHoldBadge(true);
+  showToast(`Guardada: ${nombre}`);
+};
+
+function renderHoldList() {
+  const listEl = document.getElementById('hold-list');
+  const holds = getHolds().slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+  if (!holds.length) {
+    listEl.innerHTML = '<p style="text-align:center;color:#8a7960;font-size:.85rem;">No hay cuentas pendientes.</p>';
+    return;
+  }
+  listEl.innerHTML = '';
+  holds.forEach(h => {
+    const qty = h.items.reduce((s, i) => s + i.cantidad, 0);
+    const card = document.createElement('div');
+    card.className = 'hold-card';
+    card.innerHTML = `
+      <div class="hold-name">${escHtml(h.nombre)}${h.id === activeHoldId ? '<span class="hold-tag">En caja</span>' : ''}</div>
+      <div class="hold-meta">${escHtml(h.cliente)} · ${qty} art. · ${money(holdTotal(h))}<br>${new Date(h.fecha).toLocaleString('es-HN')}</div>
+      <div style="display:flex; gap:.4rem;">
+        <button type="button" class="btn-sm btn-load">▶ Continuar</button>
+        <button type="button" class="btn-sm btn-void">🗑 Eliminar</button>
+      </div>`;
+    card.querySelector('.btn-load').onclick = () => {
+      if (bill.length && h.id !== activeHoldId &&
+          !confirm('Tienes artículos en la caja actual. Si continúas se reemplazarán.\n\nTip: cancela y usa "Guardar para continuar después" para conservarla.\n\n¿Reemplazar?')) return;
+      document.getElementById('cliente-nombre').value = h.cliente;
+      document.getElementById('cliente-telefono').value = h.telefono || '';
+      document.getElementById('metodo-pago').value = h.metodo || 'Efectivo';
+      document.getElementById('input-descuento').value = h.descuento || 0;
+      bill = JSON.parse(JSON.stringify(h.items));
+      activeHoldId = h.id;
+      modalHoldList.classList.remove('open');
+      document.querySelector('[data-view="pos"]').click();
+      renderBill();
+      showToast(`Continuando: ${h.nombre}`);
+    };
+    card.querySelector('.btn-void').onclick = () => {
+      if (!confirm(`¿Eliminar "${h.nombre}"? No se puede recuperar.`)) return;
+      if (activeHoldId === h.id) activeHoldId = null;
+      setHolds(getHolds().filter(x => x.id !== h.id));
+      renderHoldList();
+    };
+    listEl.appendChild(card);
+  });
+}
+document.getElementById('hold-tab').onclick = () => { renderHoldList(); modalHoldList.classList.add('open'); };
+document.getElementById('btn-hold-list-close').onclick = () => modalHoldList.classList.remove('open');
+refreshHoldBadge();
+
 // --- CREAR DOCUMENTO PDF COTIZACIÓN ---
 function buildCotizacionDoc(cotId, cliente, telefono, items, sub, desc, total, vendedor = currentUsername) {
   const { jsPDF } = window.jspdf;
@@ -812,6 +1007,7 @@ document.getElementById('btn-cotizacion').addEventListener('click', async () => 
     alert(`¡Cotización #${data.id} guardada!${pdfUrl ? '\nEnlace PDF listo.' : ''}\n(No ingresaste número de celular para enviar por WhatsApp).`);
   }
 
+  finishActiveHold();
   bill = [];
   document.getElementById('cliente-nombre').value = 'Consumidor Final';
   document.getElementById('cliente-telefono').value = '';
@@ -905,6 +1101,7 @@ document.getElementById('btn-facturar').addEventListener('click', async () => {
     alert(`¡Factura #${data.id} emitida! Inventario actualizado.${pdfUrl ? '\nPDF guardado en la nube.' : ''}`);
   }
 
+  finishActiveHold();
   bill = [];
   document.getElementById('cliente-nombre').value = 'Consumidor Final';
   document.getElementById('cliente-telefono').value = '';
